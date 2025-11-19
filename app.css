@@ -228,9 +228,7 @@ pre {
 }
 #popup button {
     padding: 10px 20px;
-    margin: 0 10px;
-    display: inline-block;
-    white-space: nowrap;
+    margin: 0 5px;
 }
 #overlay {
     display: none;
