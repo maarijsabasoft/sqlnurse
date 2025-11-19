@@ -214,44 +214,42 @@ pre {
     left: 50%;
     transform: translate(-50%, -50%);
     background: #fff;
-    padding: 25px 30px;
+    padding: 20px;
     border-radius: var(--border-radius, 10px);
     border: 1px solid var(--gray-light, #ddd);
     z-index: 2000;
     text-align: center;
     max-width: 400px;
-    width: 90%; /* responsive for small screens */
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* space between message and buttons */
+    width: 90%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 #popup p {
     color: var(--gray, #666);
-    margin: 0; /* margin handled by flex gap */
+    margin-bottom: 15px; /* smaller gap */
     font-size: 1rem;
-    line-height: 1.5;
+    line-height: 1.4;
+}
+
+#popup .popup-buttons {
+    display: flex;
+    gap: 10px; /* space between buttons */
 }
 
 #popup button {
-    padding: 10px 20px;
+    flex: 1; /* half width each */
+    padding: 10px 0;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.95rem;
+    background-color: #007bff; /* blue color */
+    color: #fff;
     transition: all 0.2s ease-in-out;
-    background: var(--primary-color, #ffcc00);
-    color: #000;
 }
 
 #popup button:hover {
-    background: var(--primary-hover, #e6b800);
-    transform: translateY(-2px);
-}
-
-#popup button + button {
-    margin-left: 10px; /* spacing between buttons */
+    background-color: #0056b3; /* darker blue on hover */
 }
 
 #overlay {
