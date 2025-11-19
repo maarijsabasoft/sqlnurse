@@ -631,7 +631,7 @@ def public_databases():
         personal_dbs = []
         logger.error(f"Error fetching user databases: {str(e)}")
     all_dbs = list(set(public_dbs + personal_dbs))
-    return jsonify({"databases": ["Select a database"] + all_dbs})
+    return jsonify({"databases": all_dbs})
 
 @app.route("/download_db/<db_name>", methods=["GET"])
 @login_required
