@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 import requests
 import random
 import string
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Load environment variables from .env file
 load_dotenv()
@@ -60,8 +61,26 @@ RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "send@support.tokenmap.i
 DB_FOLDER = "databases"
 os.makedirs(DB_FOLDER, exist_ok=True)
 app = Flask(__name__, static_folder="static", template_folder=".")
-app.secret_key = os.urandom(24)  # Required for sessions
+
+# Use fixed secret key from environment or generate and log a warning
+SECRET_KEY = os.environ.get("FLASK_SECRET_KEY")
+if not SECRET_KEY:
+    # Generate a persistent key if not set (but warn about it)
+    import hashlib
+    SECRET_KEY = hashlib.sha256(b"sqlnurse_default_key_change_in_production").hexdigest()
+    logger.warning("FLASK_SECRET_KEY not set in environment! Using default key. Set FLASK_SECRET_KEY in production.")
+app.secret_key = SECRET_KEY
+
+# Configure session cookies for proper domain handling
+# If behind nginx reverse proxy, ensure X-Forwarded-Proto header is set
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SESSION_COOKIE_SECURE", "True").lower() == "true"  # Only send over HTTPS
+app.config["SESSION_COOKIE_HTTPONLY"] = True  # Prevent JavaScript access
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # CSRF protection
+app.config["SESSION_COOKIE_DOMAIN"] = os.environ.get("SESSION_COOKIE_DOMAIN", None)  # Set if needed for subdomains
+# Trust proxy headers from nginx
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.config["UPLOAD_FOLDER"] = DB_FOLDER
+
 # OAuth setup
 oauth = OAuth(app)
 
@@ -464,10 +483,16 @@ def login():
 def google_login():
     callback_url = url_for('google_auth_callback', _external=True)
     nonce = secrets.token_urlsafe(16)
+    # Store nonce in session - ensure session is saved
     session['google_nonce'] = nonce
-    logger.debug(f"Initiating Google login with callback: {callback_url}, nonce: {nonce}")
+    session.permanent = True  # Make session persistent
+    logger.debug(f"Initiating Google login with callback: {callback_url}, nonce: {nonce}, session_id: {session.get('_id', 'no_id')}")
     try:
-        return google.authorize_redirect(callback_url, nonce=nonce)
+        # Authlib will handle state parameter automatically for CSRF protection
+        redirect_uri = google.authorize_redirect(callback_url, nonce=nonce)
+        # Force session save before redirect
+        session.modified = True
+        return redirect_uri
     except Exception as e:
         logger.error(f"Google login initiation failed: {str(e)}")
         flash(f"Google login initiation failed: {str(e)}", "error")
@@ -477,9 +502,22 @@ def google_login():
 def google_auth_callback():
     try:
         logger.debug(f"Received Google OAuth callback with request URL: {request.url}")
+        logger.debug(f"Session keys: {list(session.keys())}, has google_nonce: {'google_nonce' in session}")
+        
+        # Get nonce from session before authorize_access_token (which may clear session state)
+        nonce = session.get('google_nonce')
+        logger.debug(f"Retrieved nonce from session: {nonce}")
+        
+        # Authlib handles state verification automatically
         token = google.authorize_access_token()
         logger.debug(f"Access token obtained: {json.dumps({k: v for k, v in token.items() if k != 'access_token'}, indent=2)}")
-        nonce = session.pop('google_nonce', None)
+        
+        # Remove nonce from session after successful token exchange
+        if nonce:
+            session.pop('google_nonce', None)
+            session.modified = True
+        
+        # Verify nonce matches the one in the ID token
         user_info = google.parse_id_token(token, nonce=nonce)
         email = user_info.get("email")
         if not email:
@@ -502,8 +540,12 @@ def google_auth_callback():
         flash("Logged in successfully via Google!", "success")
         return redirect(url_for("tool"))
     except Exception as e:
-        logger.error(f"Google login failed: {str(e)}")
-        flash(f"Google login failed: {str(e)}", "error")
+        error_msg = str(e)
+        logger.error(f"Google login failed: {error_msg}")
+        # Check if it's a state mismatch error
+        if "mismatching_state" in error_msg or "state" in error_msg.lower():
+            logger.error("OAuth state mismatch - this may be due to session issues with multiple workers. Ensure FLASK_SECRET_KEY is set and consistent.")
+        flash(f"Google login failed: {error_msg}", "error")
         return redirect(url_for("auth_page"))
 
 @app.route("/github-login", methods=["GET"])
