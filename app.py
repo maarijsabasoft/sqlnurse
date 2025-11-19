@@ -113,7 +113,7 @@ def init_user_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                subscription_tier TEXT DEFAULT 'free',
+                subscription_tier TEXT DEFAULT 'premium',
                 email_verified INTEGER DEFAULT 0,
                 verification_code TEXT
             )
