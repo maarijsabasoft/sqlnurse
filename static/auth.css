@@ -1,0 +1,207 @@
+:root {
+    --primary: #4361ee;
+    --primary-dark: #3a56d4;
+    --secondary: #7209b7;
+    --accent: #4cc9f0;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --success: #4bb543;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --gray: #6c757d;
+    --gray-light: #e9ecef;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: var(--light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.auth-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.tabs button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    background: transparent;
+    color: var(--gray);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 2px solid transparent;
+}
+
+.tabs button.active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+.tabcontent {
+    display: none;
+    padding: 20px 0;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+.tabcontent.active {
+    display: block;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-light);
+    background: white;
+    color: var(--dark);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+button.submit {
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--border-radius);
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 10px;
+}
+
+button.submit:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+}
+
+.oauth-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.oauth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-light);
+    background: white;
+    color: var(--dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.oauth-btn:hover {
+    background: var(--gray-light);
+    transform: translateY(-2px);
+}
+
+.oauth-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.oauth-btn.google { 
+    background: #4285F4; 
+    color: #fff; 
+    border-color: #4285F4;
+}
+
+.oauth-btn.github { 
+    background: #24292e; 
+    color: #fff; 
+    border-color: #24292e;
+}
+
+.error {
+    color: var(--danger);
+    margin-top: 10px;
+    display: none;
+    text-align: center;
+}
+
+.success {
+    color: var(--success);
+    margin-top: 10px;
+    display: none;
+    text-align: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.otp-container {
+    margin-top: 15px;
+}
+
+.otp-container input {
+    text-align: center;
+    letter-spacing: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+

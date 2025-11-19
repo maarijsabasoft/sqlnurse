@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>SQL Nurse - Authentication</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <meta name="theme-color" content="#4361ee">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='android-chrome-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='android-chrome-512x512.png') }}">
     <style>
         :root {
             --primary: #4361ee;
@@ -128,13 +136,13 @@
             transition: var(--transition);
             margin-top: 10px;
         }
-        
+
         /* Override width for submit button in OTP actions */
         .otp-actions button.submit {
             width: auto;
             margin-top: 0;
         }
-        
+
         button.submit:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
@@ -262,14 +270,14 @@
 
         .otp-actions .cancel {
             flex: 1;
+            min-width: 100px;
+            width: auto;
             background: var(--gray);
             color: white;
             border: none;
             border-radius: var(--border-radius);
             cursor: pointer;
             transition: var(--transition);
-            min-width: 100px;
-            width: auto;
         }
 
         .otp-actions .cancel:hover {

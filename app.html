@@ -1850,14 +1850,14 @@ async function generateVisualization() {
         '#64B5F6', '#FFD54F', '#81C784', '#BA68C8'
     ];
     const backgroundColors = labels.map((_, i) => vibrantColors[i % vibrantColors.length]);
-    // Use grey for border colors instead of vibrant colors
-    const borderColors = labels.map(() => '#6c757d'); // Grey color
+    const borderColors = labels.map((_, i) => vibrantColors[i % vibrantColors.length]);
 
     if (vizChart) vizChart.destroy();
 
     const ctx = document.getElementById("viz_chart").getContext("2d");
     vizChart = new Chart(ctx, {
         type: 'bar',
+        indexAxis: 'x', // Vertical bars (default)
         data: {
             labels: labels,
             datasets: [{
@@ -1873,24 +1873,30 @@ async function generateVisualization() {
             plugins: {
                 legend: {
                     display: true,
-                    labels: { color: '#000000' } // Black text for names/entries
+                    labels: { color: '#000000' } // Black feature names
                 },
                 title: {
                     display: true,
                     text: prompt,
-                    color: '#000000', // Black text for title
+                    color: '#000000', // Black title
                     font: { size: 18 }
                 }
             },
             scales: {
                 x: { 
-                    ticks: { color: '#000000' }, // Black text for axis labels
-                    grid: { color: '#6c757d' } // Grey grid lines
+                    ticks: { color: '#000000' }, // Black x-axis labels
+                    grid: {
+                        display: false // Hide vertical grid lines
+                    }
                 },
                 y: {
-                    ticks: { color: '#000000' }, // Black text for axis values
+                    ticks: { color: '#000000' }, // Black y-axis labels
                     beginAtZero: true,
-                    grid: { color: '#6c757d' } // Grey grid lines
+                    grid: {
+                        color: '#e0e0e0', // Light gray horizontal grid lines
+                        lineWidth: 1,
+                        drawBorder: false
+                    }
                 }
             }
         }

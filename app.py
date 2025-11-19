@@ -1,28 +1,23 @@
-"""
-SQL Playground - Database Management and Visualization Tool
-A Flask-based application for managing databases with AI-powered query generation.
-"""
-
 import os
 import sqlite3
+import threading
+import webbrowser
 import json
 import re
-import logging
-import secrets
-import random
-import string
-
-from flask import Flask, request, render_template, jsonify, url_for, session, redirect, send_file, flash
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask import Flask, request, render_template, jsonify, url_for, session, redirect, send_file,flash
 from groq import Groq
-from dotenv import load_dotenv
-from authlib.integrations.flask_client import OAuth
-
 import pymysql
 import psycopg2
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import bcrypt
 import stripe
+from authlib.integrations.flask_client import OAuth
+import logging
+import secrets
+from dotenv import load_dotenv
 import requests
+import random
+import string
 
 # Load environment variables from .env file
 load_dotenv()
@@ -34,8 +29,15 @@ logger = logging.getLogger(__name__)
 # ---------- Config & Keys ----------
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 if not GROQ_API_KEY:
-    raise ValueError("GROQ_API_KEY not set in environment variables!")
-groq_client = Groq(api_key=GROQ_API_KEY)
+    logger.warning("GROQ_API_KEY not set in environment variables! Groq features will not work.")
+    groq_client = None
+else:
+    try:
+        groq_client = Groq(api_key=GROQ_API_KEY)
+        logger.info("Groq client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize Groq client: {str(e)}")
+        groq_client = None
 
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
@@ -55,17 +57,11 @@ GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "send@support.tokenmap.io")
 
-# ============================================================================
-# Flask Application Setup
-# ============================================================================
-
 DB_FOLDER = "databases"
 os.makedirs(DB_FOLDER, exist_ok=True)
-
-app = Flask(__name__, static_folder=".", template_folder=".")
-app.secret_key = os.urandom(24)
+app = Flask(__name__, static_folder="static", template_folder=".")
+app.secret_key = os.urandom(24)  # Required for sessions
 app.config["UPLOAD_FOLDER"] = DB_FOLDER
-
 # OAuth setup
 oauth = OAuth(app)
 
@@ -88,18 +84,12 @@ github = oauth.register(
     api_base_url='https://api.github.com/'
 )
 
-# ============================================================================
-# User Database Configuration
-# ============================================================================
-
+# ---------- User Database Setup ----------
 USER_DB = "users.db"
 
 def init_user_db():
     with sqlite3.connect(USER_DB) as conn:
-        cursor = conn.cursor()
-        
-        # Create users table if it doesn't exist
-        cursor.execute("""
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT UNIQUE NOT NULL,
@@ -109,27 +99,7 @@ def init_user_db():
                 verification_code TEXT
             )
         """)
-        
-        # Check if verification_code column exists, if not add it
-        cursor.execute("PRAGMA table_info(users)")
-        columns = [column[1] for column in cursor.fetchall()]
-        if 'verification_code' not in columns:
-            try:
-                cursor.execute("ALTER TABLE users ADD COLUMN verification_code TEXT")
-                logger.info("Added verification_code column to users table")
-            except sqlite3.OperationalError as e:
-                logger.warning(f"Could not add verification_code column: {e}")
-        
-        # Check if email_verified column exists, if not add it
-        if 'email_verified' not in columns:
-            try:
-                cursor.execute("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0")
-                logger.info("Added email_verified column to users table")
-            except sqlite3.OperationalError as e:
-                logger.warning(f"Could not add email_verified column: {e}")
-        
-        # Create user_dbs table if it doesn't exist
-        cursor.execute("""
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS user_dbs (
                 user_id INTEGER,
                 db_name TEXT,
@@ -310,34 +280,25 @@ def load_user(user_id):
             return User(user[0], user[1], user[2])
         return None
 
-# ============================================================================
-# Application Routes
-# ============================================================================
-
+# ---------- Routes ----------
 @app.route("/")
 def index():
-    """Landing page - redirects authenticated users to app."""
     if current_user.is_authenticated:
         return redirect("/app")
     return render_template("index.html")
 
-
 @app.route("/auth")
 def auth_page():
-    """Authentication page - redirects authenticated users to app."""
     if current_user.is_authenticated:
         return redirect("/app")
     return render_template("auth.html")
 
 @app.route("/tool")
 def tool():
-    """Render the main application tool page."""
     return render_template("app.html")
-
-
 @app.route("/app")
+# @login_required
 def app_page():
-    """Render the main application page."""
     return render_template("index.html")
 
 def generate_verification_code():
@@ -409,15 +370,7 @@ def signup():
                 if otp_code:
                     if email_verified:
                         return jsonify({"error": "Email already verified"}), 400
-                    # Strip whitespace and compare codes
-                    stored_code_clean = str(stored_code).strip() if stored_code else None
-                    otp_code_clean = str(otp_code).strip() if otp_code else None
-                    logger.info(f"Verifying code - stored: '{stored_code_clean}' (type: {type(stored_code)}), provided: '{otp_code_clean}' (type: {type(otp_code)})")
-                    if not stored_code_clean:
-                        return jsonify({"error": "No verification code found. Please request a new code."}), 400
-                    if not otp_code_clean:
-                        return jsonify({"error": "Please enter a verification code."}), 400
-                    if stored_code_clean == otp_code_clean:
+                    if stored_code and stored_code == otp_code:
                         # Verify email
                         cursor.execute(
                             "UPDATE users SET email_verified = 1, verification_code = NULL WHERE id = ?",
@@ -507,8 +460,6 @@ def login():
             return jsonify({"error": "Invalid credentials"}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-
-
 @app.route("/google-login", methods=["GET"])
 def google_login():
     callback_url = url_for('google_auth_callback', _external=True)
@@ -554,7 +505,6 @@ def google_auth_callback():
         logger.error(f"Google login failed: {str(e)}")
         flash(f"Google login failed: {str(e)}", "error")
         return redirect(url_for("auth_page"))
-
 
 @app.route("/github-login", methods=["GET"])
 def github_login():
@@ -611,20 +561,17 @@ def github_auth_callback():
         flash(f"GitHub login failed: {str(e)}", "error")
         return redirect(url_for("auth_page"))
 
-
 @app.route("/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
     return jsonify({"status": "Logged out"})
 
-
 @app.route("/user_info", methods=["GET"])
 def user_info():
     if current_user.is_authenticated:
         return jsonify({"email": current_user.email, "tier": current_user.subscription_tier})
     return jsonify({"error": "Not logged in"}), 401
-
 
 @app.route("/public_databases", methods=["GET"])
 def public_databases():
@@ -706,33 +653,44 @@ def get_schema_info(conn):
     return schema
 
 def generate_sql_with_groq(user_prompt, schema_info):
-    system_message = {
-        "role": "system",
-        "content": (
-            "You are a SQL assistant. Your job is to translate natural language questions into SQL queries.\n"
-            "STRICT RULES:\n"
-            "1. Only return a valid SQL query — do NOT include explanations, formatting, markdown, or backticks.\n"
-            "2. Always wrap string comparisons in LOWER() for case-insensitive matching. Example: "
-            "WHERE LOWER(students.name) = 'john'.\n"
-            "3. If multiple tables have a 'name' column (e.g., students, courses, departments), "
-            "always prefix with the table name and alias it properly. Example: "
-            "students.name AS student_name, courses.name AS course_name.\n"
-            "4. Avoid SELECT * — explicitly list columns with clear aliases.\n"
-            "Your output must ONLY be pure SQL that can be executed directly"
+    if not groq_client:
+        raise ValueError("Groq API is not configured. Please set GROQ_API_KEY in your .env file.")
+    try:
+        system_message = {
+            "role": "system",
+            "content": (
+                "You are a SQL assistant. Your job is to translate natural language questions into SQL queries.\n"
+                "STRICT RULES:\n"
+                "1. Only return a valid SQL query — do NOT include explanations, formatting, markdown, or backticks.\n"
+                "2. Always wrap string comparisons in LOWER() for case-insensitive matching. Example: "
+                "WHERE LOWER(students.name) = 'john'.\n"
+                "3. If multiple tables have a 'name' column (e.g., students, courses, departments), "
+                "always prefix with the table name and alias it properly. Example: "
+                "students.name AS student_name, courses.name AS course_name.\n"
+                "4. Avoid SELECT * — explicitly list columns with clear aliases.\n"
+                "Your output must ONLY be pure SQL that can be executed directly"
+            )
+        }
+        user_message = {
+            "role": "user",
+            "content": f"Schema:\n{schema_info}\n\nQuestion: {user_prompt}"
+        }
+        resp = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[system_message, user_message]
         )
-    }
-    user_message = {
-        "role": "user",
-        "content": f"Schema:\n{schema_info}\n\nQuestion: {user_prompt}"
-    }
-    resp = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[system_message, user_message]
-    )
-    sql_query = resp.choices[0].message.content.strip()
-    if sql_query.startswith("```sql"):
-        sql_query = sql_query.strip("```sql").strip("```").strip()
-    return sql_query
+        sql_query = resp.choices[0].message.content.strip()
+        if sql_query.startswith("```sql"):
+            sql_query = sql_query.strip("```sql").strip("```").strip()
+        return sql_query
+    except Exception as e:
+        error_msg = str(e)
+        if "401" in error_msg or "Unauthorized" in error_msg:
+            raise ValueError("Groq API authentication failed. Please check your GROQ_API_KEY in the .env file.")
+        elif "429" in error_msg or "rate limit" in error_msg.lower():
+            raise ValueError("Groq API rate limit exceeded. Please try again later.")
+        else:
+            raise ValueError(f"Groq API error: {error_msg}")
 
 def fix_sql_string_literals(sql):
     pattern = r"(LOWER\([^)]+\)\s*=\s*)([^\s'\"()]+)"
@@ -751,27 +709,9 @@ def run_sql(conn, query):
     except Exception as e:
         return {"error": str(e)}
 
-# ============================================================================
-# Database Connection and Schema Functions
-# ============================================================================
-
 def get_connection(db_type, **kwargs):
-    """
-    Create and return database connection based on type.
-    
-    Args:
-        db_type: Type of database ('sqlite', 'mysql', 'postgresql')
-        **kwargs: Connection parameters (path, host, port, user, password, database)
-        
-    Returns:
-        Database connection object
-        
-    Raises:
-        ValueError: If DB type is unsupported or required parameters are missing
-    """
-    db_type_lower = db_type.lower()
-    
-    if db_type_lower == "sqlite":
+    """Return DB connection (SQLite, MySQL, PostgreSQL)"""
+    if db_type.lower() == "sqlite":
         path = kwargs.get("path")
         if not os.path.exists(path):
             raise ValueError("SQLite DB file not found!")
@@ -780,8 +720,7 @@ def get_connection(db_type, **kwargs):
         conn.execute("PRAGMA journal_mode=WAL;")
         conn.execute("PRAGMA case_sensitive_like = OFF;")
         return conn
-    
-    elif db_type_lower == "mysql":
+    elif db_type.lower() == "mysql":
         conn = pymysql.connect(
             host=kwargs.get("host"),
             port=int(kwargs.get("port", 3306)),
@@ -792,8 +731,7 @@ def get_connection(db_type, **kwargs):
             cursorclass=pymysql.cursors.DictCursor
         )
         return conn
-    
-    elif db_type_lower == "postgresql":
+    elif db_type.lower() == "postgresql":
         conn = psycopg2.connect(
             host=kwargs.get("host"),
             port=int(kwargs.get("port", 5432)),
@@ -802,61 +740,38 @@ def get_connection(db_type, **kwargs):
             dbname=kwargs.get("database")
         )
         return conn
-    
     else:
         raise ValueError(f"Unsupported DB type: {db_type}")
 
-
 def get_schema(conn, db_type):
-    """
-    Extract database schema with lowercase table/column names.
-    
-    Args:
-        conn: Database connection
-        db_type: Type of database ('sqlite', 'mysql', 'postgresql')
-        
-    Returns:
-        dict: Schema dictionary with table names as keys and column info as values
-    """
+    """Return schema for any DB with lowercase table/column names"""
     schema = {}
     cursor = conn.cursor()
-    db_type_lower = db_type.lower()
-    
-    if db_type_lower == "sqlite":
+    if db_type.lower() == "sqlite":
         tables = cursor.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
         ).fetchall()
         for (table_name,) in tables:
             cols = cursor.execute(f"PRAGMA table_info({table_name});").fetchall()
-            schema[table_name.lower()] = [
-                {"name": c[1].lower(), "type": c[2]} for c in cols
-            ]
-    
-    elif db_type_lower == "mysql":
+            schema[table_name.lower()] = [{"name": c[1].lower(), "type": c[2]} for c in cols]
+    elif db_type.lower() == "mysql":
         cursor.execute("SHOW TABLES;")
         tables = [list(row.values())[0] for row in cursor.fetchall()]
         for table in tables:
             cursor.execute(f"DESCRIBE {table};")
             cols = cursor.fetchall()
-            schema[table.lower()] = [
-                {"name": c['Field'].lower(), "type": c['Type']} for c in cols
-            ]
-    
-    elif db_type_lower == "postgresql":
+            schema[table.lower()] = [{"name": c['Field'].lower(), "type": c['Type']} for c in cols]
+    elif db_type.lower() == "postgresql":
         cursor.execute(
             "SELECT table_name FROM information_schema.tables WHERE table_schema='public';"
         )
         tables = [row[0] for row in cursor.fetchall()]
         for table in tables:
             cursor.execute(
-                f"SELECT column_name, data_type FROM information_schema.columns "
-                f"WHERE table_name='{table}';"
+                f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table}';"
             )
             cols = cursor.fetchall()
-            schema[table.lower()] = [
-                {"name": c[0].lower(), "type": c[1]} for c in cols
-            ]
-    
+            schema[table.lower()] = [{"name": c[0].lower(), "type": c[1]} for c in cols]
     return schema
 
 @app.route("/schema", methods=["POST"])
@@ -912,27 +827,38 @@ def db_description():
             k.lower(): [{'name': c['name'].lower(), 'type': c['type']} for c in v]
             for k, v in schema_info.items()
         }
-        system_message = {
-            "role": "system",
-            "content": (
-                "You are a helpful assistant that summarizes database schemas "
-                "in simple English for laymen. Keep it short and clear."
+        if not groq_client:
+            return jsonify({"error": "Groq API is not configured. Please set GROQ_API_KEY in your .env file."}), 400
+        try:
+            system_message = {
+                "role": "system",
+                "content": (
+                    "You are a helpful assistant that summarizes database schemas "
+                    "in simple English for laymen. Keep it short and clear."
+                )
+            }
+            user_message = {
+                "role": "user",
+                "content": (
+                    f"Schema:\n{schema_lower}\n\n"
+                    "Provide a 2–3 line description of what this database is about "
+                    "and what kind of information it stores."
+                )
+            }
+            resp = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[system_message, user_message]
             )
-        }
-        user_message = {
-            "role": "user",
-            "content": (
-                f"Schema:\n{schema_lower}\n\n"
-                "Provide a 2–3 line description of what this database is about "
-                "and what kind of information it stores."
-            )
-        }
-        resp = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[system_message, user_message]
-        )
-        description = resp.choices[0].message.content.strip()
-        return jsonify({"description": description})
+            description = resp.choices[0].message.content.strip()
+            return jsonify({"description": description})
+        except Exception as e:
+            error_msg = str(e)
+            if "401" in error_msg or "Unauthorized" in error_msg:
+                return jsonify({"error": "Groq API authentication failed. Please check your GROQ_API_KEY in the .env file."}), 400
+            elif "429" in error_msg or "rate limit" in error_msg.lower():
+                return jsonify({"error": "Groq API rate limit exceeded. Please try again later."}), 400
+            else:
+                return jsonify({"error": f"Groq API error: {error_msg}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -1000,20 +926,33 @@ def visualize():
         conn.close()
         if result.get("error"):
             return jsonify({"error": result["error"]}), 400
-        user_msg = {
-            "role": "user",
-            "content": (
-                f"Here is the data returned by SQL:\n"
-                f"Columns: {result['columns']}\nRows: {result['rows'][:5]}...\n\n"
-                "Write 2-3 concise sentences summarizing the key insights "
-                "for a professional data visualization caption."
-            )
-        }
-        resp = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "system", "content": "You are a data analyst."}, user_msg]
-        )
-        summary = resp.choices[0].message.content.strip()
+        if not groq_client:
+            summary = "Groq API is not configured. Please set GROQ_API_KEY in your .env file."
+        else:
+            try:
+                user_msg = {
+                    "role": "user",
+                    "content": (
+                        f"Here is the data returned by SQL:\n"
+                        f"Columns: {result['columns']}\nRows: {result['rows'][:5]}...\n\n"
+                        "Write 2-3 concise sentences summarizing the key insights "
+                        "for a professional data visualization caption."
+                    )
+                }
+                resp = groq_client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[{"role": "system", "content": "You are a data analyst."}, user_msg]
+                )
+                summary = resp.choices[0].message.content.strip()
+            except Exception as e:
+                error_msg = str(e)
+                if "401" in error_msg or "Unauthorized" in error_msg:
+                    summary = "Groq API authentication failed. Please check your GROQ_API_KEY in the .env file."
+                elif "429" in error_msg or "rate limit" in error_msg.lower():
+                    summary = "Groq API rate limit exceeded. Please try again later."
+                else:
+                    summary = f"Groq API error: {error_msg}"
+        
         return jsonify({
             "sql": sql_query,
             "columns": result["columns"],
@@ -1059,20 +998,31 @@ def create_db():
 
     try:
         # Generate schema from LLM
-        system_message = {
-            "role": "system",
-            "content": "You are a SQL assistant. Generate only SQL CREATE TABLE statements based on the user's description. Do not add data, comments or explanation."
-        }
-        user_message = {"role": "user", "content": prompt}
+        if not groq_client:
+            return jsonify({"error": "Groq API is not configured. Please set GROQ_API_KEY in your .env file."}), 400
+        try:
+            system_message = {
+                "role": "system",
+                "content": "You are a SQL assistant. Generate only SQL CREATE TABLE statements based on the user's description. Do not add data, comments or explanation."
+            }
+            user_message = {"role": "user", "content": prompt}
 
-        resp = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[system_message, user_message]
-        )
+            resp = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[system_message, user_message]
+            )
 
-        sql_schema = resp.choices[0].message.content.strip()
-        if sql_schema.startswith("```sql"):
-            sql_schema = sql_schema.strip("```sql").strip("```").strip()
+            sql_schema = resp.choices[0].message.content.strip()
+            if sql_schema.startswith("```sql"):
+                sql_schema = sql_schema.strip("```sql").strip("```").strip()
+        except Exception as e:
+            error_msg = str(e)
+            if "401" in error_msg or "Unauthorized" in error_msg:
+                return jsonify({"error": "Groq API authentication failed. Please check your GROQ_API_KEY in the .env file."}), 400
+            elif "429" in error_msg or "rate limit" in error_msg.lower():
+                return jsonify({"error": "Groq API rate limit exceeded. Please try again later."}), 400
+            else:
+                return jsonify({"error": f"Groq API error: {error_msg}"}), 400
 
         # Create actual SQLite DB
         with sqlite3.connect(db_path, timeout=10) as conn:
@@ -1256,37 +1206,48 @@ def suggested_queries():
             conn = get_connection(db_type, path=db_path, host=data.get("host"), port=data.get("port"), database=data.get("database"), user=data.get("user"), password=data.get("password"))
         schema_info = get_schema(conn, db_type)
         conn.close()
-        system_message = {
-            "role": "system",
-            "content": (
-                "You are a SQL assistant. Generate exactly 6 useful, practical NATURAL LANGUAGE QUESTIONS (not SQL queries) "
-                "that a business user would ask about this database.\n"
-                "Format: Number each question 1-6, followed by the question only. No SQL, no explanations.\n"
-                "Example:\n"
-                "1. Total number of employees department wise\n"
-                "2. Average salary by department\n"
-                "3. Top 5 highest paid employees\n"
-                "4. Employees hired in the last year\n"
-                "5. Department wise gender distribution\n"
-                "6. Total projects per department\n"
+        if not groq_client:
+            return jsonify({"error": "Groq API is not configured. Please set GROQ_API_KEY in your .env file."}), 400
+        try:
+            system_message = {
+                "role": "system",
+                "content": (
+                    "You are a SQL assistant. Generate exactly 6 useful, practical NATURAL LANGUAGE QUESTIONS (not SQL queries) "
+                    "that a business user would ask about this database.\n"
+                    "Format: Number each question 1-6, followed by the question only. No SQL, no explanations.\n"
+                    "Example:\n"
+                    "1. Total number of employees department wise\n"
+                    "2. Average salary by department\n"
+                    "3. Top 5 highest paid employees\n"
+                    "4. Employees hired in the last year\n"
+                    "5. Department wise gender distribution\n"
+                    "6. Total projects per department\n"
+                )
+            }
+            user_message = {
+                "role": "user",
+                "content": f"Schema:\n{json.dumps(schema_info, indent=2)}\n\nGenerate 6 natural language questions:"
+            }
+            resp = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[system_message, user_message]
             )
-        }
-        user_message = {
-            "role": "user",
-            "content": f"Schema:\n{json.dumps(schema_info, indent=2)}\n\nGenerate 6 natural language questions:"
-        }
-        resp = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[system_message, user_message]
-        )
-        suggestions_text = resp.choices[0].message.content.strip()
-        queries = []
-        lines = suggestions_text.split('\n')
-        for line in lines:
-            if line.strip().startswith(tuple('123456')) and '.' in line:
-                question = line.split('.', 1)[1].strip()
-                queries.append(question.strip())
-        return jsonify({"queries": queries[:6]})
+            suggestions_text = resp.choices[0].message.content.strip()
+            queries = []
+            lines = suggestions_text.split('\n')
+            for line in lines:
+                if line.strip().startswith(tuple('123456')) and '.' in line:
+                    question = line.split('.', 1)[1].strip()
+                    queries.append(question.strip())
+            return jsonify({"queries": queries[:6]})
+        except Exception as e:
+            error_msg = str(e)
+            if "401" in error_msg or "Unauthorized" in error_msg:
+                return jsonify({"error": "Groq API authentication failed. Please check your GROQ_API_KEY in the .env file."}), 400
+            elif "429" in error_msg or "rate limit" in error_msg.lower():
+                return jsonify({"error": "Groq API rate limit exceeded. Please try again later."}), 400
+            else:
+                return jsonify({"error": f"Groq API error: {error_msg}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
