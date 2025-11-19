@@ -265,28 +265,52 @@ pre {
     width: 100%;
 }
 #popup {
-    display: none;
+    display: none; /* hidden by default */
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--gray-light);
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: var(--border-radius, 10px);
+    border: 1px solid var(--gray-light, #ddd);
     z-index: 2000;
     text-align: center;
     max-width: 400px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    width: 90%; /* responsive for small screens */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* space between message and buttons */
 }
+
 #popup p {
-    color: var(--gray);
-    margin-bottom: 20px;
+    color: var(--gray, #666);
+    margin: 0; /* margin handled by flex gap */
+    font-size: 1rem;
+    line-height: 1.5;
 }
+
 #popup button {
     padding: 10px 20px;
-    margin: 0 5px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+    background: var(--primary-color, #ffcc00);
+    color: #000;
 }
+
+#popup button:hover {
+    background: var(--primary-hover, #e6b800);
+    transform: translateY(-2px);
+}
+
+#popup button + button {
+    margin-left: 10px; /* spacing between buttons */
+}
+
 /* Success Modal Styles */
 #success-modal {
     display: none;
@@ -409,23 +433,7 @@ pre {
     .card {
         width: 100%;
     }
-  #popup {
-    display: flex !important;          /* Flex layout for buttons */
-    flex-direction: column !important; /* Stack items vertically */
-    align-items: center !important;    /* Center content horizontally */
-    gap: 10px !important;              /* Space between buttons and message */
-}
 
-#popup p {
-    margin-bottom: 10px !important;    /* Space below message */
-    text-align: center !important;     /* Center the message */
-}
-
-#popup button {
-    padding: 8px 16px !important;      /* Button padding */
-    border-radius: 5px !important;     /* Rounded corners */
-    cursor: pointer !important;        /* Pointer on hover */
-}
 }
 </style>
 </head>
