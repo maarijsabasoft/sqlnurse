@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title data-i18n="title">SQL Nurse</title>
+<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+<link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='android-chrome-192x192.png') }}">
+<link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='android-chrome-512x512.png') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-45B70ZPTEZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-45B70ZPTEZ');
+</script>
+<style>
+:root {
+    --primary: #4361ee;
+    --primary-dark: #3a56d4;
+    --secondary: #7209b7;
+    --accent: #4cc9f0;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --success: #4bb543;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --gray: #6c757d;
+    --gray-light: #e9ecef;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --transition: all 0.3s ease;
+}
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--light);
+    color: var(--dark);
+    overflow-x: hidden;
+}
+header {
+    text-align: center;
+    padding: 20px 0;
+}
+header h1 {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin: 0;
+    font-weight: 700;
+}
+header p {
+    font-size: 1.1rem;
+    color: var(--gray);
+    margin: 5px 0 0;
+}
+#landing {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: opacity 0.5s ease;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+}
+#landing h1 {
+    font-size: 3rem;
+    color: white;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+#landing p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    color: rgba(255, 255, 255, 0.9);
+}
+#landing button {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    background: white;
+    color: var(--primary);
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: var(--box-shadow);
+}
+#landing button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+#app {
+    display: none;
+    padding: 60px 20px 50px 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+.tab {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.tab button {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    border: none;
+    background: var(--gray-light);
+    color: var(--gray);
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    min-width: 120px;
+}
+.tab button.active {
+    background: var(--primary);
+    color: white;
+}
+.tabcontent {
+    display: none;
+    padding: 20px;
+    background: white;
+    border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius);
+    box-shadow: var(--box-shadow);
+    animation: fadeIn 0.5s;
+}
+@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+h2 {
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+select, input, textarea, button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-light);
+    background: white;
+    color: var(--dark);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+button {
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+thead, tbody {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+th, td {
+    border: 1px solid var(--gray-light);
+    padding: 8px;
+    text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 200px;
+    font-size: 0.9rem;
+}
+th {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+/* Responsive table - adjust column width based on number of columns */
+table[style*="table-layout: fixed"] th,
+table[style*="table-layout: fixed"] td {
+    max-width: none;
+}
+/* For tables with many columns, reduce padding and font size */
+#results table,
+#table_editor table {
+    table-layout: auto;
+}
+#results table th,
+#results table td,
+#table_editor table th,
+#table_editor table td {
+    min-width: 80px;
+    max-width: 150px;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    white-space: normal;
+    word-break: break-word;
+}
+pre {
+    background: var(--gray-light);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+}
+#db_description {
+    background: var(--gray-light);
+    padding: 12px;
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    font-family: 'Courier New', monospace;
+}
+#db_prompt, #new_db_name, #add_row_values, #question,
+#connect_db_file, #connect_host, #connect_port,
+#connect_database, #connect_user, #connect_password,
+#viz_prompt {
+    width: calc(100% - 25px);
+}
+.subscriptions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.card {
+    background: white;
+    padding: 18px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-light);
+    width: 260px;
+    box-shadow: var(--box-shadow);
+}
+.card h3 {
+    margin: 0 0 8px 0;
+    color: var(--dark);
+}
+.card p {
+    color: var(--gray);
+    margin: 0 0 12px 0;
+}
+.card button {
+    width: 100%;
+}
+#popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-light);
+    z-index: 2000;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+#popup p {
+    color: var(--gray);
+    margin-bottom: 20px;
+}
+#popup button {
+    padding: 10px 20px;
+    margin: 0 5px;
+}
+/* Success Modal Styles */
+#success-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-light);
+    z-index: 2001;
+    text-align: center;
+    max-width: 450px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease;
+}
+#success-modal .success-icon {
+    font-size: 3rem;
+    color: var(--success);
+    margin-bottom: 15px;
+}
+#success-modal h3 {
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+#success-modal p {
+    color: var(--gray);
+    margin-bottom: 20px;
+}
+#success-modal button {
+    padding: 10px 30px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+#success-modal button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+#overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1500;
+}
+.language-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2000;
+}
+.language-icon {
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--box-shadow);
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+.language-icon:hover {
+    background: var(--primary-dark);
+    transform: scale(1.1);
+}
+.language-menu {
+    display: none;
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    min-width: 150px;
+    z-index: 2001;
+}
+.language-menu button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    text-align: left;
+    color: var(--dark);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.language-menu button:hover {
+    background: var(--gray-light);
+}
+.language-menu button.active {
+    background: var(--primary);
+    color: white;
+}
+[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+/* Responsive */
+@media (max-width: 768px) {
+    .tab button {
+        min-width: 100px;
+        font-size: 0.9rem;
+        padding: 10px 15px;
+    }
+    .card {
+        width: 100%;
+    }
+}
+</style>
+</head>
+<body>
+<button id="theme-toggle" style="display:none;">☀️</button>
+<div id="overlay"></div>
+<div id="popup">
+    <p id="popup-message" data-i18n="popup_message"></p>
+    <button onclick="goToSubscriptions()" data-i18n="subscribe_now">Subscribe Now</button>
+    <button onclick="closePopup()" data-i18n="close">Close</button>
+</div>
+<!-- Success Modal -->
+<div id="success-modal">
+    <div class="success-icon">✓</div>
+    <h3 id="success-title"></h3>
+    <p id="success-message"></p>
+    <button onclick="closeSuccessModal()">OK</button>
+</div>
+<div style="margin: 20px; width: 150px;">
+    <a href="{{ url_for('app_page') }}">
+        <button style="
+            padding: 6px 12px;
+            font-size: 14px;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        ">
+            Back to Home
+        </button>
+    </a>
+</div>
+
+<div id="app" style="margin-top: -50px;">
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <h1 data-i18n="title">SQL Nurse</h1>
+                <p data-i18n="subtitle">Your Database Management and Visualization Tool</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="/auth" class="nav-button" id="app-nav-login" style="display: none; padding: 8px 20px; background: var(--primary); color: white; text-decoration: none; border-radius: var(--border-radius);" data-i18n="nav_login">Login</a>
+                <a href="/auth" class="nav-button" id="app-nav-signup" style="display: none; padding: 8px 20px; background: var(--primary); color: white; text-decoration: none; border-radius: var(--border-radius);" data-i18n="nav_signup">Sign Up</a>
+                <button class="nav-button" id="app-nav-logout" style="display: none; padding: 8px 20px; background: var(--primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;" onclick="handleAppLogout()" data-i18n="nav_logout">Logout</button>
+            </div>
+        </div>
+    </header>
+    <div class="tab">
+        <button class="tablinks" onclick="checkTabAccess('Databases')" data-i18n="databases">Databases</button>
+        <button class="tablinks" onclick="checkTabAccess('Query')" data-i18n="query">Query</button>
+        <button class="tablinks" onclick="checkTabAccess('Manage')" data-i18n="manage_rows">Manage Rows</button>
+        <button class="tablinks" onclick="checkTabAccess('CreateDB')" data-i18n="create_db">Create DB</button>
+        <button class="tablinks" onclick="checkTabAccess('ConnectDB')" data-i18n="connect_db">Connect DB</button>
+        <button class="tablinks" onclick="checkTabAccess('Visualization')" data-i18n="visualization">Visualization</button>
+        <button class="tablinks" onclick="openTab(event,'Subscriptions')" data-i18n="subscriptions">Subscriptions</button>
+    </div>
+    <div id="Databases" class="tabcontent">
+        <p>
+            If you want to make a demo, you can download the sample database file and connect to it from your computer.
+        </p>
+        <a href="https://drive.google.com/drive/folders/1TM0L-pWEI_MsrPpEmHc4ojLhHnrgEd29?usp=sharing" 
+           target="_blank" 
+           style="display: inline-block; margin-top: 8px; padding: 6px 12px; background-color: #007bff; color: white; border-radius: 4px; text-decoration: none; font-size: 14px; cursor: pointer;">
+            🔽 Download demo.db
+        </a>
+        <h2 data-i18n="databases_schema">Databases & Schema</h2>
+        <select id="db_select"></select>
+        <button onclick="loadSchema()" data-i18n="load_schema">Load Schema</button>
+        <pre id="schema_view"></pre>
+    </div>
+    <div id="Query" class="tabcontent">
+        <h2 data-i18n="ask_question">Ask a Question</h2>
+        <select id="db_query_select" onchange="loadDBDescription()"></select>
+        <pre id="db_description" data-i18n="db_description">Database description will appear here...</pre>
+        <textarea id="question" data-i18n-placeholder="ask_question_placeholder"></textarea>
+        <h3 data-i18n="suggested_queries">Suggested Queries:</h3>
+        <div id="suggested_queries" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;"></div>
+        <button onclick="askQuery()" data-i18n="run_query">Run Query</button>
+        <h3 data-i18n="generated_sql">Generated SQL:</h3>
+        <pre id="sql_display"></pre>
+        <h3 data-i18n="results">Results:</h3>
+        <div id="results"></div>
+    </div>
+    <div id="Manage" class="tabcontent">
+        <h2 data-i18n="manage_table_rows">Manage Table Rows</h2>
+        <select id="db_manage_select" onchange="loadTables()"></select>
+        <select id="table_select" onchange="updateRowPlaceholder();loadTableRows()"></select>
+        <input type="text" id="add_row_values" data-i18n-placeholder="add_row_placeholder">
+        <button onclick="addRow()" data-i18n="add_row">Add Row</button>
+        <div id="table_editor"></div>
+    </div>
+    <div id="CreateDB" class="tabcontent">
+        <h2 data-i18n="create_new_db">Create New Database</h2>
+        <input type="text" id="new_db_name" data-i18n-placeholder="db_name_placeholder">
+        <textarea id="db_prompt" rows="4" data-i18n-placeholder="db_prompt_placeholder"></textarea>
+        <button onclick="createDB()" data-i18n="create_database">Create Database</button>
+        <pre id="create_db_result"></pre>
+    </div>
+    <div id="ConnectDB" class="tabcontent">
+        <h2 data-i18n="connect_your_db">Connect Your Database</h2>
+        <select id="connect_db_type">
+            <option value="sqlite" data-i18n="sqlite">SQLite</option>
+            <option value="mysql" data-i18n="mysql">MySQL</option>
+            <option value="postgresql" data-i18n="postgresql">PostgreSQL</option>
+        </select>
+        <input type="file" id="connect_db_file" accept=".db">
+        <input type="text" id="connect_host" data-i18n-placeholder="host_placeholder" style="display:none;">
+        <input type="text" id="connect_port" data-i18n-placeholder="port_placeholder" style="display:none;">
+        <input type="text" id="connect_database" data-i18n-placeholder="database_name_placeholder" style="display:none;">
+        <input type="text" id="connect_user" data-i18n-placeholder="username_placeholder" style="display:none;">
+        <input type="password" id="connect_password" data-i18n-placeholder="password_placeholder" style="display:none;">
+        <button onclick="connectDB()" data-i18n="connect">Connect</button>
+        <pre id="connect_db_result"></pre>
+    </div>
+    <div id="Visualization" class="tabcontent">
+        <h2 data-i18n="data_visualization">Data Visualization</h2>
+        <select id="viz_db_select"></select>
+        <textarea id="viz_prompt" data-i18n-placeholder="viz_prompt_placeholder"></textarea>
+        <button onclick="generateVisualization()" data-i18n="generate_chart">Generate Chart</button>
+        <h3 data-i18n="generated_sql">Generated SQL:</h3>
+        <pre id="viz_sql"></pre>
+        <h3 data-i18n="chart">Chart:</h3>
+        <canvas id="viz_chart" style="max-width:100%;height:400px;"></canvas>
+        <h3 data-i18n="summary">Summary:</h3>
+        <p id="viz_summary"></p>
+    </div>
+    <div id="Subscriptions" class="tabcontent">
+        <h2 data-i18n="choose_plan">Choose a Plan</h2>
+        <div id="subs_info" data-i18n="loading_plans">Loading plans...</div>
+        <div class="subscriptions" id="subscriptions_container"></div>
+        <p style="margin-top:14px;color:var(--gray);" data-i18n="subscription_info">All plans are monthly recurring. Billing handled by Stripe (test mode).</p>
+    </div>
+    <div class="language-container">
+        <div class="language-icon" onclick="toggleLanguageMenu()">🌐</div>
+        <div class="language-menu" id="language-menu">
+            <button class="language-option active" data-lang="en" data-i18n="lang_english">English</button>
+            <button class="language-option" data-lang="fr" data-i18n="lang_french">French</button>
+            <button class="language-option" data-lang="de" data-i18n="lang_german">German</button>
+            <button class="language-option" data-lang="pt" data-i18n="lang_portuguese">Portuguese</button>
+            <button class="language-option" data-lang="nl" data-i18n="lang_dutch">Dutch</button>
+            <button class="language-option" data-lang="zh" data-i18n="lang_chinese">Chinese</button>
+            <button class="language-option" data-lang="ar" data-i18n="lang_arabic">Arabic</button>
+            <button class="language-option" data-lang="es" data-i18n="lang_spanish">Spanish</button>
+            <button class="language-option" data-lang="it" data-i18n="lang_italian">Italian</button>
+        </div>
+    </div>
+</div>
+<script>
+let userTier = 'free';
+let vizChart;
+let currentLanguage = 'en';
+let isUpdating = false; // Recursion guard
+
+const translations = {
+    en: {
+        title: "SQL Nurse",
+        subtitle: "Your Database Management and Visualization Tool",
+        databases: "Databases",
+        query: "Query",
+        manage_rows: "Manage Rows",
+        create_db: "Create DB",
+        connect_db: "Connect DB",
+        visualization: "Visualization",
+        subscriptions: "Subscriptions",
+        demo_info: "If you want to make a demo, you can download the sample database file demo.db and connect to it from your computer.",
+        databases_schema: "Databases & Schema",
+        load_schema: "Load Schema",
+        ask_question: "Ask a Question",
+        db_description: "Database description will appear here...",
+        ask_question_placeholder: "Ask a question about the selected DB",
+        suggested_queries: "Suggested Queries:",
+        run_query: "Run Query",
+        generated_sql: "Generated SQL:",
+        results: "Results",
+        manage_table_rows: "Manage Table Rows",
+        add_row_placeholder: "Write all values according to number of columns separated by commas e.g if cols are id, name and age then add like 1,abc,22",
+        add_row: "Add Row",
+        create_new_db: "Create New Database",
+        db_name_placeholder: "Database name",
+        db_prompt_placeholder: "Describe tables and columns, e.g., students(id,name,age); courses(id,name,credits)",
+        create_database: "Create Database",
+        connect_your_db: "Connect Your Database",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "Host",
+        port_placeholder: "Port",
+        database_name_placeholder: "Database Name",
+        username_placeholder: "Username",
+        password_placeholder: "Password",
+        connect: "Connect",
+        data_visualization: "Data Visualization",
+        viz_prompt_placeholder: "e.g., Show a bar chart of students per course",
+        generate_chart: "Generate Chart",
+        chart: "Chart:",
+        summary: "Summary:",
+        choose_plan: "Choose a Plan",
+        loading_plans: "Loading plans...",
+        subscription_info: "All plans are monthly recurring. Billing handled by Stripe (test mode).",
+        subscribe_now: "Subscribe Now",
+        close: "Close",
+        popup_message: "Access to this feature is restricted. Please upgrade your plan.",
+        select_db_error: "Please select a database",
+        schema_load_error: "Error loading schema",
+        select_db_table_error: "Please select a database and table",
+        table_load_error: "Error loading table rows",
+        db_upload_success: "Database uploaded successfully!",
+        db_upload_error: "Error uploading database",
+        db_connect_success: "Database connected successfully!",
+        db_connect_error: "Error connecting database",
+        query_access_denied: "You are on the {tier} tier and cannot access the Query feature. Please subscribe to a higher tier.",
+        manage_rows_access_denied: "You are on the {tier} tier and cannot access the Manage Rows feature. Please subscribe to a higher tier.",
+        create_db_access_denied: "You are on the {tier} tier and cannot access the Create DB feature. Please subscribe to a higher tier.",
+        visualization_access_denied: "You are on the {tier} tier and cannot access the Visualization feature. Please subscribe to the Premium tier.",
+        db_name_prompt_required: "Provide database name and prompt",
+        db_created: "Database Created!",
+        row_added: "Row added!",
+        row_deleted: "Row deleted!",
+        select_db_prompt: "Select DB and enter a prompt",
+        chart_columns_error: "Need at least two columns for a chart",
+        stripe_test_checkout: "Stripe test checkout (monthly subscriptions)",
+        stripe_config_error: "Failed to load Stripe config",
+        checkout_session_error: "Error creating checkout session",
+        checkout_init_error: "Could not initialize checkout",
+        error: "Error",
+        lang_english: "English",
+        lang_french: "French",
+        lang_german: "German",
+        lang_portuguese: "Portuguese",
+        lang_dutch: "Dutch",
+        lang_chinese: "Chinese",
+        lang_arabic: "Arabic",
+        lang_spanish: "Spanish",
+        lang_italian: "Italian"
+    },
+    fr: {
+        title: "Infirmière SQL",
+        subtitle: "Votre outil de gestion et de visualisation de bases de données",
+        databases: "Bases de données",
+        query: "Requête",
+        manage_rows: "Gérer les lignes",
+        create_db: "Créer DB",
+        connect_db: "Connecter DB",
+        visualization: "Visualisation",
+        subscriptions: "Abonnements",
+        demo_info: "Si vous souhaitez faire une démo, vous pouvez télécharger le fichier de base de données d'exemple demo.db et vous y connecter depuis votre ordinateur.",
+        databases_schema: "Bases de données et schéma",
+        load_schema: "Charger le schéma",
+        ask_question: "Poser une question",
+        db_description: "La description de la base de données apparaîtra ici...",
+        ask_question_placeholder: "Posez une question sur la base de données sélectionnée",
+        suggested_queries: "Requêtes suggérées :",
+        run_query: "Exécuter la requête",
+        generated_sql: "SQL généré :",
+        results: "Résultats :",
+        manage_table_rows: "Gérer les lignes de la table",
+        add_row_placeholder: "Écrivez toutes les valeurs selon le nombre de colonnes séparées par des virgules, par ex. si les colonnes sont id, nom et âge, alors ajoutez comme 1,abc,22",
+        add_row: "Ajouter une ligne",
+        create_new_db: "Créer une nouvelle base de données",
+        db_name_placeholder: "Nom de la base de données",
+        db_prompt_placeholder: "Décrivez les tables et les colonnes, par ex., étudiants(id,nom,âge); cours(id,nom,crédits)",
+        create_database: "Créer la base de données",
+        connect_your_db: "Connecter votre base de données",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "Hôte",
+        port_placeholder: "Port",
+        database_name_placeholder: "Nom de la base de données",
+        username_placeholder: "Nom d'utilisateur",
+        password_placeholder: "Mot de passe",
+        connect: "Connecter",
+        data_visualization: "Visualisation des données",
+        viz_prompt_placeholder: "Par ex., Afficher un histogramme des étudiants par cours",
+        generate_chart: "Générer le graphique",
+        chart: "Graphique :",
+        summary: "Résumé :",
+        choose_plan: "Choisir un plan",
+        loading_plans: "Chargement des plans...",
+        subscription_info: "Tous les plans sont renouvelés mensuellement. Facturation gérée par Stripe (mode test).",
+        subscribe_now: "S'abonner maintenant",
+        close: "Fermer",
+        popup_message: "L'accès à cette fonctionnalité est restreint. Veuillez passer à un plan supérieur.",
+        select_db_error: "Veuillez sélectionner une base de données",
+        schema_load_error: "Erreur lors du chargement du schéma",
+        select_db_table_error: "Veuillez sélectionner une base de données et une table",
+        table_load_error: "Erreur lors du chargement des lignes de la table",
+        db_upload_success: "Base de données téléchargée avec succès !",
+        db_upload_error: "Erreur lors du téléchargement de la base de données",
+        db_connect_success: "Base de données connectée avec succès !",
+        db_connect_error: "Erreur lors de la connexion à la base de données",
+        query_access_denied: "Vous êtes sur le plan {tier} et ne pouvez pas accéder à la fonctionnalité de requête. Veuillez souscrire à un plan supérieur.",
+        manage_rows_access_denied: "Vous êtes sur le plan {tier} et ne pouvez pas accéder à la fonctionnalité de gestion des lignes. Veuillez souscrire à un plan supérieur.",
+        create_db_access_denied: "Vous êtes sur le plan {tier} et ne pouvez pas accéder à la fonctionnalité de création de base de données. Veuillez souscrire à un plan supérieur.",
+        visualization_access_denied: "Vous êtes sur le plan {tier} et ne pouvez pas accéder à la fonctionnalité de visualisation. Veuillez souscrire au plan Premium.",
+        db_name_prompt_required: "Fournissez le nom de la base de données et l'invite",
+        db_created: "Base de données créée !",
+        row_added: "Ligne ajoutée !",
+        row_deleted: "Ligne supprimée !",
+        select_db_prompt: "Sélectionnez une base de données et entrez une invite",
+        chart_columns_error: "Il faut au moins deux colonnes pour un graphique",
+        stripe_test_checkout: "Paiement test Stripe (abonnements mensuels)",
+        stripe_config_error: "Échec du chargement de la configuration Stripe",
+        checkout_session_error: "Erreur lors de la création de la session de paiement",
+        checkout_init_error: "Impossible d'initialiser le paiement",
+        error: "Erreur",
+        lang_english: "Anglais",
+        lang_french: "Français",
+        lang_german: "Allemand",
+        lang_portuguese: "Portugais",
+        lang_dutch: "Néerlandais",
+        lang_chinese: "Chinois",
+        lang_arabic: "Arabe",
+        lang_spanish: "Espagnol",
+        lang_italian: "Italien"
+    },
+    de: {
+        title: "SQL-Krankenschwester",
+        subtitle: "Ihr Tool für Datenbankmanagement und Visualisierung",
+        databases: "Datenbanken",
+        query: "Abfrage",
+        manage_rows: "Zeilen verwalten",
+        create_db: "DB erstellen",
+        connect_db: "DB verbinden",
+        visualization: "Visualisierung",
+        subscriptions: "Abonnements",
+        demo_info: "Wenn Sie eine Demo erstellen möchten, können Sie die Beispieldatenbankdatei demo.db herunterladen und von Ihrem Computer aus verbinden.",
+        databases_schema: "Datenbanken & Schema",
+        load_schema: "Schema laden",
+        ask_question: "Eine Frage stellen",
+        db_description: "Datenbankbeschreibung wird hier angezeigt...",
+        ask_question_placeholder: "Stellen Sie eine Frage zur ausgewählten Datenbank",
+        suggested_queries: "Vorgeschlagene Abfragen:",
+        run_query: "Abfrage ausführen",
+        generated_sql: "Generierter SQL:",
+        results: "Ergebnisse:",
+        manage_table_rows: "Tabellenzeilen verwalten",
+        add_row_placeholder: "Schreiben Sie alle Werte entsprechend der Anzahl der Spalten, getrennt durch Kommas, z.B. wenn die Spalten id, name und age sind, dann wie 1,abc,22 hinzufügen",
+        add_row: "Zeile hinzufügen",
+        create_new_db: "Neue Datenbank erstellen",
+        db_name_placeholder: "Datenbankname",
+        db_prompt_placeholder: "Beschreiben Sie Tabellen und Spalten, z.B. studenten(id,name,alter); kurse(id,name,credits)",
+        create_database: "Datenbank erstellen",
+        connect_your_db: "Ihre Datenbank verbinden",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "Host",
+        port_placeholder: "Port",
+        database_name_placeholder: "Datenbankname",
+        username_placeholder: "Benutzername",
+        password_placeholder: "Passwort",
+        connect: "Verbinden",
+        data_visualization: "Datenvisualisierung",
+        viz_prompt_placeholder: "Z.B. Zeigen Sie ein Balkendiagramm der Studenten pro Kurs",
+        generate_chart: "Diagramm generieren",
+        chart: "Diagramm:",
+        summary: "Zusammenfassung:",
+        choose_plan: "Einen Plan auswählen",
+        loading_plans: "Pläne werden geladen...",
+        subscription_info: "Alle Pläne sind monatlich wiederkehrend. Abrechnung erfolgt über Stripe (Testmodus).",
+        subscribe_now: "Jetzt abonnieren",
+        close: "Schließen",
+        popup_message: "Der Zugriff auf diese Funktion ist eingeschränkt. Bitte upgraden Sie Ihren Plan.",
+        select_db_error: "Bitte wählen Sie eine Datenbank aus",
+        schema_load_error: "Fehler beim Laden des Schemas",
+        select_db_table_error: "Bitte wählen Sie eine Datenbank und eine Tabelle aus",
+        table_load_error: "Fehler beim Laden der Tabellenzeilen",
+        db_upload_success: "Datenbank erfolgreich hochgeladen!",
+        db_upload_error: "Fehler beim Hochladen der Datenbank",
+        db_connect_success: "Datenbank erfolgreich verbunden!",
+        db_connect_error: "Fehler beim Verbinden der Datenbank",
+        query_access_denied: "Sie befinden sich auf dem {tier}-Plan und können nicht auf die Abfragefunktion zugreifen. Bitte abonnieren Sie einen höheren Plan.",
+        manage_rows_access_denied: "Sie befinden sich auf dem {tier}-Plan und können nicht auf die Funktion zum Verwalten von Zeilen zugreifen. Bitte abonnieren Sie einen höheren Plan.",
+        create_db_access_denied: "Sie befinden sich auf dem {tier}-Plan und können nicht auf die Funktion zum Erstellen von Datenbanken zugreifen. Bitte abonnieren Sie einen höheren Plan.",
+        visualization_access_denied: "Sie befinden sich auf dem {tier}-Plan und können nicht auf die Visualisierungsfunktion zugreifen. Bitte abonnieren Sie den Premium-Plan.",
+        db_name_prompt_required: "Geben Sie den Datenbanknamen und die Eingabeaufforderung an",
+        db_created: "Datenbank erstellt!",
+        row_added: "Zeile hinzugefügt!",
+        row_deleted: "Zeile gelöscht!",
+        select_db_prompt: "Wählen Sie eine Datenbank aus und geben Sie eine Eingabeaufforderung ein",
+        chart_columns_error: "Mindestens zwei Spalten sind für ein Diagramm erforderlich",
+        stripe_test_checkout: "Stripe-Testkasse (monatliche Abonnements)",
+        stripe_config_error: "Fehler beim Laden der Stripe-Konfiguration",
+        checkout_session_error: "Fehler beim Erstellen der Kassensitzung",
+        checkout_init_error: "Kasse konnte nicht initialisiert werden",
+        error: "Fehler",
+        lang_english: "Englisch",
+        lang_french: "Französisch",
+        lang_german: "Deutsch",
+        lang_portuguese: "Portugiesisch",
+        lang_dutch: "Niederländisch",
+        lang_chinese: "Chinesisch",
+        lang_arabic: "Arabisch",
+        lang_spanish: "Spanisch",
+        lang_italian: "Italienisch"
+    },
+    pt: {
+        title: "Enfermeira SQL",
+        subtitle: "Sua ferramenta de gerenciamento e visualização de banco de dados",
+        databases: "Bancos de dados",
+        query: "Consulta",
+        manage_rows: "Gerenciar linhas",
+        create_db: "Criar DB",
+        connect_db: "Conectar DB",
+        visualization: "Visualização",
+        subscriptions: "Assinaturas",
+        demo_info: "Se você deseja fazer uma demonstração, pode baixar o arquivo de banco de dados de exemplo demo.db e conectá-lo a partir do seu computador.",
+        databases_schema: "Bancos de dados e esquema",
+        load_schema: "Carregar esquema",
+        ask_question: "Fazer uma pergunta",
+        db_description: "A descrição do banco de dados aparecerá aqui...",
+        ask_question_placeholder: "Faça uma pergunta sobre o banco de dados selecionado",
+        suggested_queries: "Consultas sugeridas:",
+        run_query: "Executar consulta",
+        generated_sql: "SQL gerado:",
+        results: "Resultados:",
+        manage_table_rows: "Gerenciar linhas da tabela",
+        add_row_placeholder: "Escreva todos os valores de acordo com o número de colunas, separados por vírgulas, por ex., se as colunas forem id, nome e idade, adicione como 1,abc,22",
+        add_row: "Adicionar linha",
+        create_new_db: "Criar novo banco de dados",
+        db_name_placeholder: "Nome do banco de dados",
+        db_prompt_placeholder: "Descreva tabelas e colunas, por ex., estudantes(id,nome,idade); cursos(id,nome,créditos)",
+        create_database: "Criar banco de dados",
+        connect_your_db: "Conectar seu banco de dados",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "Host",
+        port_placeholder: "Porta",
+        database_name_placeholder: "Nome do banco de dados",
+        username_placeholder: "Nome de usuário",
+        password_placeholder: "Senha",
+        connect: "Conectar",
+        data_visualization: "Visualização de dados",
+        viz_prompt_placeholder: "Por ex., Mostrar um gráfico de barras de estudantes por curso",
+        generate_chart: "Gerar gráfico",
+        chart: "Gráfico:",
+        summary: "Resumo:",
+        choose_plan: "Escolher um plano",
+        loading_plans: "Carregando planos...",
+        subscription_info: "Todos os planos são renovados mensalmente. Faturamento gerenciado pelo Stripe (modo teste).",
+        subscribe_now: "Assinar agora",
+        close: "Fechar",
+        popup_message: "O acesso a esta funcionalidade é restrito. Por favor, atualize seu plano.",
+        select_db_error: "Por favor, selecione um banco de dados",
+        schema_load_error: "Erro ao carregar o esquema",
+        select_db_table_error: "Por favor, selecione um banco de dados e uma tabela",
+        table_load_error: "Erro ao carregar as linhas da tabela",
+        db_upload_success: "Banco de dados carregado com sucesso!",
+        db_upload_error: "Erro ao carregar o banco de dados",
+        db_connect_success: "Banco de dados conectado com sucesso!",
+        db_connect_error: "Erro ao conectar o banco de dados",
+        query_access_denied: "Você está no plano {tier} e não pode acessar a funcionalidade de consulta. Por favor, assine um plano superior.",
+        manage_rows_access_denied: "Você está no plano {tier} e não pode acessar a funcionalidade de gerenciamento de linhas. Por favor, assine um plano superior.",
+        create_db_access_denied: "Você está no plano {tier} e não pode acessar a funcionalidade de criação de banco de dados. Por favor, assine um plano superior.",
+        visualization_access_denied: "Você está no plano {tier} e não pode acessar a funcionalidade de visualização. Por favor, assine o plano Premium.",
+        db_name_prompt_required: "Forneça o nome do banco de dados e o prompt",
+        db_created: "Banco de dados criado!",
+        row_added: "Linha adicionada!",
+        row_deleted: "Linha excluída!",
+        select_db_prompt: "Selecione um banco de dados e insira um prompt",
+        chart_columns_error: "São necessárias pelo menos duas colunas para um gráfico",
+        stripe_test_checkout: "Checkout de teste do Stripe (assinaturas mensais)",
+        stripe_config_error: "Falha ao carregar a configuração do Stripe",
+        checkout_session_error: "Erro ao criar a sessão de checkout",
+        checkout_init_error: "Não foi possível inicializar o checkout",
+        error: "Erro",
+        lang_english: "Inglês",
+        lang_french: "Francês",
+        lang_german: "Alemão",
+        lang_portuguese: "Português",
+        lang_dutch: "Holandês",
+        lang_chinese: "Chinês",
+        lang_arabic: "Árabe",
+        lang_spanish: "Espanhol",
+        lang_italian: "Italiano"
+    },
+    nl: {
+        title: "SQL Verpleegster",
+        subtitle: "Uw tool voor databasebeheer en visualisatie",
+        databases: "Databases",
+        query: "Query",
+        manage_rows: "Rijen beheren",
+        create_db: "DB aanmaken",
+        connect_db: "DB verbinden",
+        visualization: "Visualisatie",
+        subscriptions: "Abonnementen",
+        demo_info: "Als u een demo wilt maken, kunt u het voorbeeld databasebestand demo.db downloaden en vanaf uw computer verbinden.",
+        databases_schema: "Databases & Schema",
+        load_schema: "Schema laden",
+        ask_question: "Een vraag stellen",
+        db_description: "Databasebeschrijving verschijnt hier...",
+        ask_question_placeholder: "Stel een vraag over de geselecteerde database",
+        suggested_queries: "Voorgestelde queries:",
+        run_query: "Query uitvoeren",
+        generated_sql: "Gegenereerde SQL:",
+        results: "Resultaten:",
+        manage_table_rows: "Tabelrijen beheren",
+        add_row_placeholder: "Schrijf alle waarden volgens het aantal kolommen, gescheiden door komma's, bijv. als de kolommen id, naam en leeftijd zijn, voeg dan toe als 1,abc,22",
+        add_row: "Rij toevoegen",
+        create_new_db: "Nieuwe database aanmaken",
+        db_name_placeholder: "Databasenaam",
+        db_prompt_placeholder: "Beschrijf tabellen en kolommen, bijv. studenten(id,naam,leeftijd); cursussen(id,naam,studiepunten)",
+        create_database: "Database aanmaken",
+        connect_your_db: "Uw database verbinden",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "Host",
+        port_placeholder: "Poort",
+        database_name_placeholder: "Databasenaam",
+        username_placeholder: "Gebruikersnaam",
+        password_placeholder: "Wachtwoord",
+        connect: "Verbinden",
+        data_visualization: "Gegevensvisualisatie",
+        viz_prompt_placeholder: "Bijv. Toon een staafdiagram van studenten per cursus",
+        generate_chart: "Grafiek genereren",
+        chart: "Grafiek:",
+        summary: "Samenvatting:",
+        choose_plan: "Kies een plan",
+        loading_plans: "Plannen laden...",
+        subscription_info: "Alle plannen worden maandelijks vernieuwd. Facturering wordt afgehandeld door Stripe (testmodus).",
+        subscribe_now: "Nu abonneren",
+        close: "Sluiten",
+        popup_message: "Toegang tot deze functie is beperkt. Upgrade uw plan.",
+        select_db_error: "Selecteer een database",
+        schema_load_error: "Fout bij het laden van het schema",
+        select_db_table_error: "Selecteer een database en een tabel",
+        table_load_error: "Fout bij het laden van de tabelrijen",
+        db_upload_success: "Database succesvol geüpload!",
+        db_upload_error: "Fout bij het uploaden van de database",
+        db_connect_success: "Database succesvol verbonden!",
+        db_connect_error: "Fout bij het verbinden van de database",
+        query_access_denied: "U bent op het {tier}-plan en kunt geen toegang krijgen tot de queryfunctie. Abonneer u op een hoger plan.",
+        manage_rows_access_denied: "U bent op het {tier}-plan en kunt geen toegang krijgen tot de functie voor het beheren van rijen. Abonneer u op een hoger plan.",
+        create_db_access_denied: "U bent op het {tier}-plan en kunt geen toegang krijgen tot de functie voor het maken van een database. Abonneer u op een hoger plan.",
+        visualization_access_denied: "U bent op het {tier}-plan en kunt geen toegang krijgen tot de visualisatiefunctie. Abonneer u op het Premium-plan.",
+        db_name_prompt_required: "Geef de databasenaam en de prompt op",
+        db_created: "Database aangemaakt!",
+        row_added: "Rij toegevoegd!",
+        row_deleted: "Rij verwijderd!",
+        select_db_prompt: "Selecteer een database en voer een prompt in",
+        chart_columns_error: "Minstens twee kolommen zijn nodig voor een grafiek",
+        stripe_test_checkout: "Stripe-testkassa (maandelijkse abonnementen)",
+        stripe_config_error: "Fout bij het laden van de Stripe-configuratie",
+        checkout_session_error: "Fout bij het maken van de kassasessie",
+        checkout_init_error: "Kon de kassa niet initialiseren",
+        error: "Fout",
+        lang_english: "Engels",
+        lang_french: "Frans",
+        lang_german: "Duits",
+        lang_portuguese: "Portugees",
+        lang_dutch: "Nederlands",
+        lang_chinese: "Chinees",
+        lang_arabic: "Arabisch",
+        lang_spanish: "Spaans",
+        lang_italian: "Italiaans"
+    },
+    zh: {
+        title: "SQL护士",
+        subtitle: "您的数据库管理和可视化工具",
+        databases: "数据库",
+        query: "查询",
+        manage_rows: "管理行",
+        create_db: "创建数据库",
+        connect_db: "连接数据库",
+        visualization: "可视化",
+        subscriptions: "订阅",
+        demo_info: "如果您想进行演示，可以下载示例数据库文件 demo.db 并从您的计算机连接到它。",
+        databases_schema: "数据库与架构",
+        load_schema: "加载架构",
+        ask_question: "提出问题",
+        db_description: "数据库描述将显示在此处...",
+        ask_question_placeholder: "询问有关所选数据库的问题",
+        suggested_queries: "建议查询：",
+        run_query: "运行查询",
+        generated_sql: "生成的SQL：",
+        results: "结果：",
+        manage_table_rows: "管理表行",
+        add_row_placeholder: "根据列数写入所有值，用逗号分隔，例如，如果列是id、name和age，则添加如1,abc,22",
+        add_row: "添加行",
+        create_new_db: "创建新数据库",
+        db_name_placeholder: "数据库名称",
+        db_prompt_placeholder: "描述表和列，例如，学生(id,姓名,年龄); 课程(id,名称,学分)",
+        create_database: "创建数据库",
+        connect_your_db: "连接您的数据库",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "主机",
+        port_placeholder: "端口",
+        database_name_placeholder: "数据库名称",
+        username_placeholder: "用户名",
+        password_placeholder: "密码",
+        connect: "连接",
+        data_visualization: "数据可视化",
+        viz_prompt_placeholder: "例如，显示每个课程的学生柱状图",
+        generate_chart: "生成图表",
+        chart: "图表：",
+        summary: "摘要：",
+        choose_plan: "选择计划",
+        loading_plans: "正在加载计划...",
+        subscription_info: "所有计划均为每月续订。由Stripe处理账单（测试模式）。",
+        subscribe_now: "立即订阅",
+        close: "关闭",
+        popup_message: "此功能访问受限。请升级您的计划。",
+        select_db_error: "请选择一个数据库",
+        schema_load_error: "加载架构时出错",
+        select_db_table_error: "请选择一个数据库和表",
+        table_load_error: "加载表行时出错",
+        db_upload_success: "数据库上传成功！",
+        db_upload_error: "上传数据库时出错",
+        db_connect_success: "数据库连接成功！",
+        db_connect_error: "连接数据库时出错",
+        query_access_denied: "您当前处于{tier}计划，无法访问查询功能。请订阅更高计划。",
+        manage_rows_access_denied: "您当前处于{tier}计划，无法访问行管理功能。请订阅更高计划。",
+        create_db_access_denied: "您当前处于{tier}计划，无法访问创建数据库功能。请订阅更高计划。",
+        visualization_access_denied: "您当前处于{tier}计划，无法访问可视化功能。请订阅Premium计划。",
+        db_name_prompt_required: "请提供数据库名称和提示",
+        db_created: "数据库已创建！",
+        row_added: "行已添加！",
+        row_deleted: "行已删除！",
+        select_db_prompt: "选择数据库并输入提示",
+        chart_columns_error: "图表至少需要两列",
+        stripe_test_checkout: "Stripe测试结账（月度订阅）",
+        stripe_config_error: "无法加载Stripe配置",
+        checkout_session_error: "创建结账会话时出错",
+        checkout_init_error: "无法初始化结账",
+        error: "错误",
+        lang_english: "英语",
+        lang_french: "法语",
+        lang_german: "德语",
+        lang_portuguese: "葡萄牙语",
+        lang_dutch: "荷兰语",
+        lang_chinese: "中文",
+        lang_arabic: "阿拉伯语",
+        lang_spanish: "西班牙语",
+        lang_italian: "意大利语"
+    },
+    ar: {
+        title: "ممرضة SQL",
+        subtitle: "أداتك لإدارة قواعد البيانات وتصورها",
+        databases: "قواعد البيانات",
+        query: "استعلام",
+        manage_rows: "إدارة الصفوف",
+        create_db: "إنشاء قاعدة بيانات",
+        connect_db: "ربط قاعدة بيانات",
+        visualization: "تصور",
+        subscriptions: "الاشتراكات",
+        demo_info: "إذا كنت ترغب في إجراء عرض توضيحي، يمكنك تنزيل ملف قاعدة البيانات النموذجية demo.db والارتباط به من جهاز الكمبيوتر الخاص بك.",
+        databases_schema: "قواعد البيانات والمخطط",
+        load_schema: "تحميل المخطط",
+        ask_question: "طرح سؤال",
+        db_description: "سيظهر وصف قاعدة البيانات هنا...",
+        ask_question_placeholder: "اطرح سؤالاً عن قاعدة البيانات المحددة",
+        suggested_queries: "الاستعلامات المقترحة:",
+        run_query: "تشغيل الاستعلام",
+        generated_sql: "SQL المُنشأ:",
+        results: "النتائج:",
+        manage_table_rows: "إدارة صفوف الجدول",
+        add_row_placeholder: "اكتب جميع القيم حسب عدد الأعمدة مفصولة بفواصل، على سبيل المثال إذا كانت الأعمدة هي id، name وage، فأضف مثل 1,abc,22",
+        add_row: "إضافة صف",
+        create_new_db: "إنشاء قاعدة بيانات جديدة",
+        db_name_placeholder: "اسم قاعدة البيانات",
+        db_prompt_placeholder: "صف الجداول والأعمدة، على سبيل المثال، طلاب(id,اسم,عمر); دورات(id,اسم,ساعات معتمدة)",
+        create_database: "إنشاء قاعدة بيانات",
+        connect_your_db: "ربط قاعدة بياناتك",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "المضيف",
+        port_placeholder: "المنفذ",
+        database_name_placeholder: "اسم قاعدة البيانات",
+        username_placeholder: "اسم المستخدم",
+        password_placeholder: "كلمة المرور",
+        connect: "ربط",
+        data_visualization: "تصور البيانات",
+        viz_prompt_placeholder: "على سبيل المثال، إظهار مخطط شريطي للطلاب لكل دورة",
+        generate_chart: "إنشاء مخطط",
+        chart: "مخطط:",
+        summary: "ملخص:",
+        choose_plan: "اختر خطة",
+        loading_plans: "جاري تحميل الخطط...",
+        subscription_info: "جميع الخطط متجددة شهريًا. تتم معالجة الفوترة بواسطة Stripe (وضع الاختبار).",
+        subscribe_now: "اشترك الآن",
+        close: "إغلاق",
+        popup_message: "الوصول إلى هذه الميزة مقيد. يرجى ترقية خطتك.",
+        select_db_error: "يرجى تحديد قاعدة بيانات",
+        schema_load_error: "خطأ في تحميل المخطط",
+        select_db_table_error: "يرجى تحديد قاعدة بيانات وجدول",
+        table_load_error: "خطأ في تحميل صفوف الجدول",
+        db_upload_success: "تم رفع قاعدة البيانات بنجاح!",
+        db_upload_error: "خطأ في رفع قاعدة البيانات",
+        db_connect_success: "تم ربط قاعدة البيانات بنجاح!",
+        db_connect_error: "خطأ في ربط قاعدة البيانات",
+        query_access_denied: "أنت على خطة {tier} ولا يمكنك الوصول إلى ميزة الاستعلام. يرجى الاشتراك في خطة أعلى.",
+        manage_rows_access_denied: "أنت على خطة {tier} ولا يمكنك الوصول إلى ميزة إدارة الصفوف. يرجى الاشتراك في خطة أعلى.",
+        create_db_access_denied: "أنت على خطة {tier} ولا يمكنك الوصول إلى ميزة إنشاء قاعدة بيانات. يرجى الاشتراك في خطة أعلى.",
+        visualization_access_denied: "أنت على خطة {tier} ولا يمكنك الوصول إلى ميزة التصور. يرجى الاشتراك في خطة Premium.",
+        db_name_prompt_required: "يرجى تقديم اسم قاعدة البيانات والموجه",
+        db_created: "تم إنشاء قاعدة البيانات!",
+        row_added: "تم إضافة الصف!",
+        row_deleted: "تم حذف الصف!",
+        select_db_prompt: "حدد قاعدة بيانات وأدخل موجه",
+        chart_columns_error: "مطلوب عمودان على الأقل لرسم مخطط",
+        stripe_test_checkout: "تجربة الدفع عبر Stripe (اشتراكات شهرية)",
+        stripe_config_error: "فشل تحميل تكوين Stripe",
+        checkout_session_error: "خطأ في إنشاء جلسة الدفع",
+        checkout_init_error: "تعذر تهيئة الدفع",
+        error: "خطأ",
+        lang_english: "الإنجليزية",
+        lang_french: "الفرنسية",
+        lang_german: "الألمانية",
+        lang_portuguese: "البرتغالية",
+        lang_dutch: "الهولندية",
+        lang_chinese: "الصينية",
+        lang_arabic: "العربية",
+        lang_spanish: "الإسبانية",
+        lang_italian: "الإيطالية"
+    },
+    es: {
+        title: "Enfermera SQL",
+        subtitle: "Tu herramienta de gestión y visualización de bases de datos",
+        databases: "Bases de datos",
+        query: "Consulta",
+        manage_rows: "Gestionar filas",
+        create_db: "Crear DB",
+        connect_db: "Conectar DB",
+        visualization: "Visualización",
+        subscriptions: "Suscripciones",
+        demo_info: "Si deseas realizar una demostración, puedes descargar el archivo de base de datos de ejemplo demo.db y conectarlo desde tu computadora.",
+        databases_schema: "Bases de datos y esquema",
+        load_schema: "Cargar esquema",
+        ask_question: "Hacer una pregunta",
+        db_description: "La descripción de la base de datos aparecerá aquí...",
+        ask_question_placeholder: "Haz una pregunta sobre la base de datos seleccionada",
+        suggested_queries: "Consultas sugeridas:",
+        run_query: "Ejecutar consulta",
+        generated_sql: "SQL generado:",
+        results: "Resultados:",
+        manage_table_rows: "Gestionar filas de la tabla",
+        add_row_placeholder: "Escribe todos los valores según el número de columnas, separados por comas, por ejemplo, si las columnas son id, nombre y edad, agrega como 1,abc,22",
+        add_row: "Agregar fila",
+        create_new_db: "Crear nueva base de datos",
+        db_name_placeholder: "Nombre de la base de datos",
+        db_prompt_placeholder: "Describe tablas y columnas, por ejemplo, estudiantes(id,nombre,edad); cursos(id,nombre,créditos)",
+        create_database: "Crear base de datos",
+        connect_your_db: "Conectar tu base de datos",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "Host",
+        port_placeholder: "Puerto",
+        database_name_placeholder: "Nombre de la base de datos",
+        username_placeholder: "Nombre de usuario",
+        password_placeholder: "Contraseña",
+        connect: "Conectar",
+        data_visualization: "Visualización de datos",
+        viz_prompt_placeholder: "Por ejemplo, mostrar un gráfico de barras de estudiantes por curso",
+        generate_chart: "Generar gráfico",
+        chart: "Gráfico:",
+        summary: "Resumen:",
+        choose_plan: "Elegir un plan",
+        loading_plans: "Cargando planes...",
+        subscription_info: "Todos los planes son de renovación mensual. Facturación gestionada por Stripe (modo de prueba).",
+        subscribe_now: "Suscribirse ahora",
+        close: "Cerrar",
+        popup_message: "El acceso a esta función está restringido. Por favor, actualiza tu plan.",
+        select_db_error: "Por favor, selecciona una base de datos",
+        schema_load_error: "Error al cargar el esquema",
+        select_db_table_error: "Por favor, selecciona una base de datos y una tabla",
+        table_load_error: "Error al cargar las filas de la tabla",
+        db_upload_success: "¡Base de datos cargada con éxito!",
+        db_upload_error: "Error al cargar la base de datos",
+        db_connect_success: "¡Base de datos conectada con éxito!",
+        db_connect_error: "Error al conectar la base de datos",
+        query_access_denied: "Estás en el plan {tier} y no puedes acceder a la función de consulta. Por favor, suscríbete a un plan superior.",
+        manage_rows_access_denied: "Estás en el plan {tier} y no puedes acceder a la función de gestión de filas. Por favor, suscríbete a un plan superior.",
+        create_db_access_denied: "Estás en el plan {tier} y no puedes acceder a la función de creación de base de datos. Por favor, suscríbete a un plan superior.",
+        visualization_access_denied: "Estás en el plan {tier} y no puedes acceder a la función de visualización. Por favor, suscríbete al plan Premium.",
+        db_name_prompt_required: "Proporciona el nombre de la base de datos y el prompt",
+        db_created: "¡Base de datos creada!",
+        row_added: "¡Fila agregada!",
+        row_deleted: "¡Fila eliminada!",
+        select_db_prompt: "Selecciona una base de datos e ingresa un prompt",
+        chart_columns_error: "Se necesitan al menos dos columnas para un gráfico",
+        stripe_test_checkout: "Checkout de prueba de Stripe (suscripciones mensuales)",
+        stripe_config_error: "Error al cargar la configuración de Stripe",
+        checkout_session_error: "Error al crear la sesión de checkout",
+        checkout_init_error: "No se pudo inicializar el checkout",
+        error: "Error",
+        lang_english: "Inglés",
+        lang_french: "Francés",
+        lang_german: "Alemán",
+        lang_portuguese: "Portugués",
+        lang_dutch: "Holandés",
+        lang_chinese: "Chino",
+        lang_arabic: "Árabe",
+        lang_spanish: "Español",
+        lang_italian: "Italiano"
+    },
+    it: {
+        title: "Infermiera SQL",
+        subtitle: "Il tuo strumento per la gestione e la visualizzazione dei database",
+        databases: "Database",
+        query: "Query",
+        manage_rows: "Gestisci righe",
+        create_db: "Crea DB",
+        connect_db: "Connetti DB",
+        visualization: "Visualizzazione",
+        subscriptions: "Abbonamenti",
+        demo_info: "Se desideri fare una demo, puoi scaricare il file di database di esempio demo.db e collegarlo dal tuo computer.",
+        databases_schema: "Database e schema",
+        load_schema: "Carica schema",
+        ask_question: "Fai una domanda",
+        db_description: "La descrizione del database apparirà qui...",
+        ask_question_placeholder: "Fai una domanda sul database selezionato",
+        suggested_queries: "Query suggerite:",
+        run_query: "Esegui query",
+        generated_sql: "SQL generato:",
+        results: "Risultati:",
+        manage_table_rows: "Gestisci righe della tabella",
+        add_row_placeholder: "Scrivi tutti i valori in base al numero di colonne, separati da virgole, ad esempio, se le colonne sono id, nome ed età, aggiungi come 1,abc,22",
+        add_row: "Aggiungi riga",
+        create_new_db: "Crea nuovo database",
+        db_name_placeholder: "Nome del database",
+        db_prompt_placeholder: "Descrivi tabelle e colonne, ad esempio, studenti(id,nome,età); corsi(id,nome,crediti)",
+        create_database: "Crea database",
+        connect_your_db: "Collega il tuo database",
+        sqlite: "SQLite",
+        mysql: "MySQL",
+        postgresql: "PostgreSQL",
+        host_placeholder: "Host",
+        port_placeholder: "Porta",
+        database_name_placeholder: "Nome del database",
+        username_placeholder: "Nome utente",
+        password_placeholder: "Password",
+        connect: "Connetti",
+        data_visualization: "Visualizzazione dei dati",
+        viz_prompt_placeholder: "Ad esempio, mostra un grafico a barre degli studenti per corso",
+        generate_chart: "Genera grafico",
+        chart: "Grafico:",
+        summary: "Riepilogo:",
+        choose_plan: "Scegli un piano",
+        loading_plans: "Caricamento dei piani...",
+        subscription_info: "Tutti i piani sono a rinnovo mensile. Fatturazione gestita da Stripe (modalità test).",
+        subscribe_now: "Abbonati ora",
+        close: "Chiudi",
+        popup_message: "L'accesso a questa funzione è limitato. Per favore, aggiorna il tuo piano.",
+        select_db_error: "Per favore, seleziona un database",
+        schema_load_error: "Errore nel caricamento dello schema",
+        select_db_table_error: "Per favore, seleziona un database e una tabella",
+        table_load_error: "Errore nel caricamento delle righe della tabella",
+        db_upload_success: "Database caricato con successo!",
+        db_upload_error: "Errore nel caricamento del database",
+        db_connect_success: "Database connesso con successo!",
+        db_connect_error: "Errore nella connessione al database",
+        query_access_denied: "Sei sul piano {tier} e non puoi accedere alla funzione di query. Per favore, abbonati a un piano superiore.",
+        manage_rows_access_denied: "Sei sul piano {tier} e non puoi accedere alla funzione di gestione delle righe. Per favore, abbonati a un piano superiore.",
+        create_db_access_denied: "Sei sul piano {tier} e non puoi accedere alla funzione di creazione del database. Per favore, abbonati a un piano superiore.",
+        visualization_access_denied: "Sei sul piano {tier} e non puoi accedere alla funzione di visualizzazione. Per favore, abbonati al piano Premium.",
+        db_name_prompt_required: "Fornisci il nome del database e il prompt",
+        db_created: "Database creato!",
+        row_added: "Riga aggiunta!",
+        row_deleted: "Riga eliminata!",
+        select_db_prompt: "Seleziona un database e inserisci un prompt",
+        chart_columns_error: "Sono necessarie almeno due colonne per un grafico",
+        stripe_test_checkout: "Checkout di prova Stripe (abbonamenti mensili)",
+        stripe_config_error: "Errore nel caricamento della configurazione Stripe",
+        checkout_session_error: "Errore nella creazione della sessione di checkout",
+        checkout_init_error: "Impossibile inizializzare il checkout",
+        error: "Errore",
+        lang_english: "Inglese",
+        lang_french: "Francese",
+        lang_german: "Tedesco",
+        lang_portuguese: "Portoghese",
+        lang_dutch: "Olandese",
+        lang_chinese: "Cinese",
+        lang_arabic: "Arabo",
+        lang_spanish: "Spagnolo",
+        lang_italian: "Italiano"
+    }
+};
+function showErrorMessage(message) {
+    const appDiv = document.getElementById('app');
+    appDiv.style.display = 'block'; // Ensure app is visible
+    appDiv.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 20px;">
+        <h2>${translations[currentLanguage].error || 'Error'}</h2>
+        <p>${message}</p>
+        <button onclick="window.location.reload()">${translations[currentLanguage].try_again || 'Try Again'}</button>
+    </div>`;
+}
+
+async function checkLogin() {
+    try {
+        const resp = await fetch("/user_info", {credentials: 'include'});
+        if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        }
+        const data = await resp.json();
+        if (data.error || !data.tier) {
+            console.error('Login error:', data.error || 'No tier information');
+            showErrorMessage(translations[currentLanguage].error_login || 'Failed to authenticate. Please try logging in again.');
+            return;
+        }
+        userTier = data.tier;
+        document.getElementById('app').style.display = 'block';
+        await loadDatabases();
+        const firstTabButton = document.querySelector('.tablinks');
+        if (firstTabButton) {
+            firstTabButton.click(); // Open the first tab (Databases)
+        } else {
+            console.error('No tablinks found to open default tab');
+            showErrorMessage(translations[currentLanguage].error_ui || 'Error initializing UI. Please refresh the page.');
+        }
+    } catch (err) {
+        console.error('Error checking login status:', err);
+        showErrorMessage(translations[currentLanguage].error_login || 'Error connecting to server. Please check your connection and try again.');
+    }
+}
+function showApp() {
+    document.getElementById('app').style.display = 'block';
+    checkTabAccess('Databases');
+}
+
+function checkTabAccess(tabName) {
+    const accessRules = {
+        'Databases': ['free', 'basic', 'standard', 'premium'],
+        'Query': ['standard', 'premium'],
+        'Manage': ['basic', 'standard', 'premium'],
+        'CreateDB': ['free', 'basic', 'standard', 'premium'],
+        'ConnectDB': ['free', 'basic', 'standard', 'premium'],
+        'Visualization': ['premium'],
+        'Subscriptions': ['free', 'basic', 'standard', 'premium']
+    };
+    if (!accessRules[tabName].includes(userTier)) {
+        showPopup(translations[currentLanguage][`popup_message_${tabName.toLowerCase()}`] || 
+            translations[currentLanguage].popup_message.replace('{tier}', userTier).replace('{tabName}', tabName));
+        return;
+    }
+    openTab({currentTarget: document.querySelector(`button[onclick*="${tabName}"]`)}, tabName);
+}
+
+function showPopup(message) {
+    document.getElementById('popup-message').innerText = message;
+    document.getElementById('popup').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+}
+
+function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+function showSuccessModal(title, message) {
+    document.getElementById('success-title').textContent = title;
+    document.getElementById('success-message').textContent = message;
+    document.getElementById('success-modal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+}
+
+function closeSuccessModal() {
+    document.getElementById('success-modal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+function goToSubscriptions() {
+    closePopup();
+    openTab({currentTarget: document.querySelector(`button[onclick*='Subscriptions']`)}, 'Subscriptions');
+}
+
+function openTab(evt, tabName) {
+    const tabcontent = document.getElementsByClassName("tabcontent");
+    const tablinks = document.getElementsByClassName("tablinks");
+    for (let i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
+    for (let i = 0; i < tablinks.length; i++) tablinks[i].className = tablinks[i].className.replace(" active", "");
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+function toggleLanguageMenu() {
+    const menu = document.getElementById('language-menu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+function changeLanguage(lang) {
+    if (isUpdating) return;
+    isUpdating = true;
+
+    currentLanguage = lang;
+    document.documentElement.lang = lang;
+    document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+
+    const i18nElements = Array.from(document.querySelectorAll('[data-i18n]'));
+    i18nElements.forEach(element => {
+        const key = element.dataset.i18n;
+        if (translations[lang][key]) {
+            element.innerText = translations[lang][key];
+        }
+    });
+
+    const placeholderElements = Array.from(document.querySelectorAll('[data-i18n-placeholder]'));
+    placeholderElements.forEach(element => {
+        const key = element.dataset.i18nPlaceholder;
+        if (translations[lang][key]) {
+            element.placeholder = translations[lang][key];
+        }
+    });
+
+    document.querySelector('title').innerText = translations[lang].title;
+    document.querySelectorAll('.language-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+
+    updateSubscriptionsContent();
+    console.log(`Language changed to: ${lang}`);
+    toggleLanguageMenu();
+
+    isUpdating = false;
+}
+
+document.querySelectorAll('.language-option').forEach(button => {
+    button.addEventListener('click', () => changeLanguage(button.dataset.lang));
+});
+
+// Database functionality
+document.getElementById("connect_db_type").addEventListener("change", function() {
+    const type = this.value;
+    document.getElementById("connect_db_file").style.display = type === "sqlite" ? "block" : "none";
+    ["connect_host", "connect_port", "connect_database", "connect_user", "connect_password"].forEach(id => {
+        document.getElementById(id).style.display = type !== "sqlite" ? "block" : "none";
+    });
+});
+
+async function connectDB() {
+    const type = document.getElementById("connect_db_type").value;
+    if (type === "sqlite") {
+        const fileInput = document.getElementById("connect_db_file");
+        if (!fileInput.files.length) {
+            alert(translations[currentLanguage].select_db_error || "Please select a .db file");
+            return;
+        }
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        try {
+            const resp = await fetch("/upload_db", {
+                method: "POST",
+                body: formData,
+                credentials: 'include'
+            });
+            if (!resp.ok) {
+                throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+            }
+            const data = await resp.json();
+            document.getElementById("connect_db_result").innerText = data.error ? data.error : JSON.stringify(data.schema, null, 2);
+            if (!data.error) {
+                alert(translations[currentLanguage].db_upload_success);
+                await loadDatabases();
+            }
+        } catch (err) {
+            document.getElementById("connect_db_result").innerText = translations[currentLanguage].db_upload_error + ": " + err;
+        }
+    } else {
+        const payload = {
+            db_type: type,
+            host: document.getElementById("connect_host").value,
+            port: document.getElementById("connect_port").value,
+            database: document.getElementById("connect_database").value,
+            db_name: document.getElementById("connect_database").value,
+            user: document.getElementById("connect_user").value,
+            password: document.getElementById("connect_password").value
+        };
+        try {
+            const resp = await fetch("/connect_db", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload),
+                credentials: 'include'
+            });
+            if (!resp.ok) {
+                throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+            }
+            const data = await resp.json();
+            document.getElementById("connect_db_result").innerText = data.error ? data.error : JSON.stringify(data.schema, null, 2);
+            if (!data.error) {
+                alert(translations[currentLanguage].db_connect_success);
+                await loadDatabases();
+            }
+        } catch (err) {
+            document.getElementById("connect_db_result").innerText = translations[currentLanguage].db_connect_error + ": " + err;
+        }
+    }
+}
+
+async function loadDatabases() {
+    try {
+        const resp = await fetch("/public_databases", {credentials: 'include'});
+        if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        }
+        const data = await resp.json();
+        if (data.error) {
+            console.error('Error loading databases:', data.error);
+            return;
+        }
+        ["db_select", "db_query_select", "db_manage_select", "viz_db_select"].forEach(id => {
+            const sel = document.getElementById(id);
+            sel.innerHTML = `<option value="" disabled selected>${translations[currentLanguage].select_db || "Select a database"}</option>`;
+            data.databases.forEach(db => {
+                let o = document.createElement("option");
+                o.value = db;
+                o.text = db;
+                sel.appendChild(o);
+            });
+        });
+        await loadTables();
+    } catch (err) {
+        console.error('Error loading databases:', err);
+    }
+}
+
+async function loadSchema() {
+    const db = document.getElementById("db_select").value;
+    if (!db) {
+        document.getElementById("schema_view").innerText = translations[currentLanguage].select_db_error;
+        return;
+    }
+    try {
+        const resp = await fetch("/schema", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({db_name: db}),
+            credentials: 'include'
+        });
+        if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        }
+        const data = await resp.json();
+        document.getElementById("schema_view").innerText = data.error ? data.error : JSON.stringify(data.schema, null, 2);
+    } catch (err) {
+        document.getElementById("schema_view").innerText = translations[currentLanguage].schema_load_error + ": " + err;
+    }
+}
+
+
+       async function loadDBDescription() {
+    const db = document.getElementById("db_query_select").value;
+    if (!db) {
+        document.getElementById("db_description").innerText = translations[currentLanguage].select_db_error || "Please select a database";
+        return;
+    }
+    try {
+        const resp = await fetch("/db_description", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({db_name: db}),
+            credentials: 'include'
+        });
+        if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        }
+        const data = await resp.json();
+        document.getElementById("db_description").innerText = data.error ? data.error : data.description;
+
+        const s_resp = await fetch("/suggested_queries", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({db_name: db}),
+            credentials: 'include'
+        });
+        if (!s_resp.ok) {
+            throw new Error(`HTTP ${s_resp.status}: ${s_resp.statusText}`);
+        }
+        const s_data = await s_resp.json();
+        const div = document.getElementById("suggested_queries");
+        div.innerHTML = "";
+        if (s_data.queries && Array.isArray(s_data.queries)) {
+            s_data.queries.forEach(q => {
+                const btn = document.createElement("button");
+                btn.innerText = q;
+                btn.onclick = () => {
+                    document.getElementById("question").value = q;
+                    askQuery();
+                };
+                div.appendChild(btn);
+            });
+        }
+    } catch (err) {
+        document.getElementById("db_description").innerText = translations[currentLanguage].schema_load_error + ": " + err;
+        document.getElementById("suggested_queries").innerHTML = "";
+    }
+}
+async function askQuery() {
+    if (!['standard', 'premium'].includes(userTier)) {
+        showPopup('You are on the ' + userTier + ' tier and cannot access the Query feature. Please subscribe to a higher tier.');
+        return;
+    }
+    const db = document.getElementById("db_query_select").value;
+    const question = document.getElementById("question").value;
+    const resp = await fetch("/ask", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({db_name: db, question}), credentials: 'include'});
+    const data = await resp.json();
+    if (data.error) {
+        alert(data.error);
+        return;
+    }
+    document.getElementById("sql_display").innerText = data.sql;
+    const div = document.getElementById("results");
+    if (data.result.error) {
+        div.innerText = data.result.error;
+        return;
+    }
+    let html = "<div style='overflow-x: auto; width: 100%;'><table style='table-layout: auto; min-width: 100%;'><thead><tr>";
+    const colCount = data.result.columns.length;
+    const colWidth = colCount > 10 ? '80px' : colCount > 5 ? '120px' : '150px';
+    data.result.columns.forEach(c => html += `<th style='min-width: ${colWidth}; max-width: ${colWidth};'>${c}</th>`);
+    html += "</tr></thead><tbody>";
+    data.result.rows.forEach(r => {
+        html += "<tr>";
+        data.result.columns.forEach(c => html += `<td style='min-width: ${colWidth}; max-width: ${colWidth};'>${r[c] || ''}</td>`);
+        html += "</tr>";
+    });
+    html += "</tbody></table></div>";
+    div.innerHTML = html;
+}
+async function loadTables() {
+    const db = document.getElementById("db_manage_select").value;
+    if (!db) {
+        document.getElementById("table_select").innerHTML = `<option value="" disabled selected>${translations[currentLanguage].select_db_error || "Select a database first"}</option>`;
+        return;
+    }
+    try {
+        const resp = await fetch("/schema", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({db_name: db}),
+            credentials: 'include'
+        });
+        if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        }
+        const data = await resp.json();
+        if (data.error || !data.schema) {
+            document.getElementById("table_select").innerHTML = `<option value="" disabled selected>${data.error || "No tables available"}</option>`;
+            return;
+        }
+        const sel = document.getElementById("table_select");
+        sel.innerHTML = `<option value="" disabled selected>${translations[currentLanguage].select_table || "Select a table"}</option>`;
+        Object.keys(data.schema).forEach(table => {
+            let o = document.createElement("option");
+            o.value = table;
+            o.text = table;
+            sel.appendChild(o);
+        });
+        updateRowPlaceholder();
+        loadTableRows();
+    } catch (err) {
+        document.getElementById("table_select").innerHTML = `<option value="" disabled selected>${translations[currentLanguage].schema_load_error + ": " + err}</option>`;
+    }
+}
+
+function updateRowPlaceholder() {
+    const db = document.getElementById("db_manage_select").value;
+    const table = document.getElementById("table_select").value;
+    if (!db || !table) {
+        document.getElementById("add_row_values").placeholder = translations[currentLanguage].add_row_placeholder;
+        return;
+    }
+    fetch("/schema", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({db_name: db}),
+        credentials: 'include'
+    }).then(resp => resp.json()).then(data => {
+        if (data.schema && data.schema[table]) {
+            const cols = Object.keys(data.schema[table]).join(",");
+            document.getElementById("add_row_values").placeholder = translations[currentLanguage].add_row_placeholder + ` e.g., ${cols}`;
+        }
+    }).catch(err => {
+        console.error("Error updating row placeholder:", err);
+    });
+}
+
+async function loadTableRows() {
+    if (!['basic', 'standard', 'premium'].includes(userTier)) {
+        showPopup(translations[currentLanguage].manage_rows_access_denied.replace('{tier}', userTier));
+        return;
+    }
+    const db = document.getElementById("db_manage_select").value;
+    const table = document.getElementById("table_select").value;
+    if (!db || !table) {
+        document.getElementById("table_editor").innerText = translations[currentLanguage].select_db_table_error || "Please select a database and table";
+        return;
+    }
+    try {
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(table)) {
+            throw new Error("Invalid table name");
+        }
+        const resp = await fetch("/ask", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({db_name: db, question: `SELECT * FROM ${table}`}),
+            credentials: 'include'
+        });
+        if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        }
+        const data = await resp.json();
+        const div = document.getElementById("table_editor");
+        if (data.error || (data.result && data.result.error)) {
+            div.innerText = data.error || data.result.error;
+            return;
+        }
+        if (!data.result || !data.result.columns || !data.result.rows) {
+            throw new Error("Invalid response format from server");
+        }
+        let html = "<div style='overflow-x: auto; width: 100%;'><table style='table-layout: auto; min-width: 100%;'><thead><tr>";
+        const colCount = data.result.columns.length + 1; // +1 for Actions column
+        const colWidth = colCount > 10 ? '80px' : colCount > 5 ? '120px' : '150px';
+        data.result.columns.forEach(c => html += `<th style='min-width: ${colWidth}; max-width: ${colWidth};'>${c}</th>`);
+        html += `<th style='min-width: 100px; max-width: 100px;'>${translations[currentLanguage].actions || "Actions"}</th></tr></thead><tbody>`;
+        const keyCol = data.result.columns[0];
+        data.result.rows.forEach(r => {
+            html += "<tr>";
+            data.result.columns.forEach(c => html += `<td style='min-width: ${colWidth}; max-width: ${colWidth};'>${r[c] || ''}</td>`);
+            html += `<td style='min-width: 100px; max-width: 100px;'><button onclick='deleteRow("${db}","${table}","${keyCol}=${r[keyCol]}")' data-i18n="delete">${translations[currentLanguage].delete || "Delete"}</button></td>`;
+            html += "</tr>";
+        });
+        html += "</tbody></table></div>";
+        div.innerHTML = html;
+    } catch (err) {
+        document.getElementById("table_editor").innerText = translations[currentLanguage].table_load_error + ": " + err;
+    }
+}
+async function addRow() {
+    if (!['basic', 'standard', 'premium'].includes(userTier)) {
+        showPopup('You are on the ' + userTier + ' tier and cannot access the Manage Rows feature. Please subscribe to a higher tier.');
+        return;
+    }
+    const db = document.getElementById("db_manage_select").value;
+    const table = document.getElementById("table_select").value;
+    const values = document.getElementById("add_row_values").value;
+    const resp = await fetch("/add_row", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({db_name: db, table, values}), credentials: 'include'});
+    const data = await resp.json();
+    if (data.error) {
+        alert(data.error);
+        return;
+    }
+    alert("Row added!");
+    loadTableRows();
+}
+async function deleteRow(db, table, condition) {
+    if (!['basic', 'standard', 'premium'].includes(userTier)) {
+        showPopup('You are on the ' + userTier + ' tier and cannot access the Manage Rows feature. Please subscribe to a higher tier.');
+        return;
+    }
+    const resp = await fetch("/delete_row", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({db_name: db, table, condition}), credentials: 'include'});
+    const data = await resp.json();
+    if (data.error) {
+        alert(data.error);
+        return;
+    }
+    alert("Row deleted!");
+    loadTableRows();
+}
+async function createDB() {
+    if (!['free', 'basic', 'standard', 'premium'].includes(userTier)) {
+        showPopup('You are on the ' + userTier + ' tier and cannot access the Create DB feature. Please subscribe to a higher tier.');
+        return;
+    }
+    const db_name = document.getElementById("new_db_name").value;
+    const prompt = document.getElementById("db_prompt").value;
+    if (!db_name || !prompt) {
+        alert("Provide database name and prompt");
+        return;
+    }
+    const resp = await fetch("/create_db", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({db_name, prompt}), credentials: 'include'});
+    const data = await resp.json();
+    if (data.error) {
+        document.getElementById("create_db_result").innerText = data.error;
+        showPopup(data.error);
+    } else {
+        document.getElementById("create_db_result").innerText = "Database Created!\n" + data.sql_schema;
+        // Clear form
+        document.getElementById("new_db_name").value = "";
+        document.getElementById("db_prompt").value = "";
+        // Show success modal
+        showSuccessModal("Database Created!", `Database "${db_name}" has been created successfully!`);
+        loadDatabases();
+    }
+}
+async function generateVisualization() {
+    if (userTier !== 'premium') {
+        showPopup('You are on the ' + userTier + ' tier and cannot access the Visualization feature. Please subscribe to the Premium tier.');
+        return;
+    }
+
+    const db = document.getElementById("viz_db_select").value;
+    const prompt = document.getElementById("viz_prompt").value;
+
+    if (!db || !prompt) {
+        alert("Select DB and enter a prompt");
+        return;
+    }
+
+    const resp = await fetch("/visualize", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ db_name: db, prompt }),
+        credentials: 'include'
+    });
+
+    const data = await resp.json();
+    if (data.error) {
+        alert(data.error);
+        return;
+    }
+
+    document.getElementById("viz_sql").innerText = data.sql;
+    document.getElementById("viz_summary").innerText = data.summary;
+
+    const cols = data.columns;
+    const rows = data.rows;
+
+    if (cols.length < 2) {
+        alert("Need at least two columns for a chart");
+        return;
+    }
+
+    const labels = rows.map(r => r[cols[0]]);
+    const values = rows.map(r => Number(r[cols[1]]) || 0);
+    const isLight = document.body.classList.contains('theme-light');
+
+    // 🎨 Vibrant colors for colorful look on white bg
+    const vibrantColors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+        '#9966FF', '#FF9F40', '#00A36C', '#E57373',
+        '#64B5F6', '#FFD54F', '#81C784', '#BA68C8'
+    ];
+    const backgroundColors = labels.map((_, i) => vibrantColors[i % vibrantColors.length]);
+    // Use grey for border colors instead of vibrant colors
+    const borderColors = labels.map(() => '#6c757d'); // Grey color
+
+    if (vizChart) vizChart.destroy();
+
+    const ctx = document.getElementById("viz_chart").getContext("2d");
+    vizChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: cols[1],
+                data: values,
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: '#000000' } // Black text for names/entries
+                },
+                title: {
+                    display: true,
+                    text: prompt,
+                    color: '#000000', // Black text for title
+                    font: { size: 18 }
+                }
+            },
+            scales: {
+                x: { 
+                    ticks: { color: '#000000' }, // Black text for axis labels
+                    grid: { color: '#6c757d' } // Grey grid lines
+                },
+                y: {
+                    ticks: { color: '#000000' }, // Black text for axis values
+                    beginAtZero: true,
+                    grid: { color: '#6c757d' } // Grey grid lines
+                }
+            }
+        }
+    });
+}
+async function updateSubscriptionsContent() {
+    if (isUpdating) return;
+    isUpdating = true;
+
+    const container = document.getElementById("subscriptions_container");
+    container.innerHTML = "";
+    const plans = {
+        basic: { nickname: translations[currentLanguage].basic_plan || "Basic", amount_cents: 1000 },
+        standard: { nickname: translations[currentLanguage].standard_plan || "Standard", amount_cents: 1500 },
+        premium: { nickname: translations[currentLanguage].premium_plan || "Premium", amount_cents: 2500 }
+    };
+    Object.keys(plans).forEach(key => {
+        const p = plans[key];
+        const priceUSD = (p.amount_cents / 100).toFixed(2);
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `<h3>${p.nickname}</h3>
+                         <p>$${priceUSD} / ${translations[currentLanguage].month || "month"}</p>
+                         <p>${translations[currentLanguage].recurring_subscription || "Recurring monthly subscription."}</p>
+                         <button onclick="startCheckout('${key}')" data-i18n="subscribe_to_${key}">${translations[currentLanguage][`subscribe_to_${key}`] || `Subscribe to ${p.nickname}`}</button>`;
+        container.appendChild(div);
+    });
+
+    isUpdating = false;
+}
+
+async function startCheckout(plan) {
+    try {
+        const resp = await fetch("/stripe_config", {credentials: 'include'});
+        if (!resp.ok) {
+            throw new Error(translations[currentLanguage].stripe_config_error);
+        }
+        const {publishableKey} = await resp.json();
+        const stripe = Stripe(publishableKey);
+        const resp2 = await fetch("/create_checkout_session", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({plan}),
+            credentials: 'include'
+        });
+        if (!resp2.ok) {
+            throw new Error(translations[currentLanguage].checkout_session_error);
+        }
+        const {sessionId} = await resp2.json();
+        const {error} = await stripe.redirectToCheckout({sessionId});
+        if (error) {
+            throw new Error(translations[currentLanguage].checkout_init_error + ": " + error.message);
+        }
+    } catch (err) {
+        alert(translations[currentLanguage].error + ": " + err);
+    }
+}
+// Check auth status for app page
+async function checkAppAuthStatus() {
+    try {
+        const response = await fetch('/user_info', { credentials: 'include' });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.email) {
+                // User is logged in
+                document.getElementById('app-nav-login').style.display = 'none';
+                document.getElementById('app-nav-signup').style.display = 'none';
+                document.getElementById('app-nav-logout').style.display = 'inline-block';
+            } else {
+                // User is not logged in
+                document.getElementById('app-nav-login').style.display = 'inline-block';
+                document.getElementById('app-nav-signup').style.display = 'inline-block';
+                document.getElementById('app-nav-logout').style.display = 'none';
+            }
+        } else {
+            // Not logged in
+            document.getElementById('app-nav-login').style.display = 'inline-block';
+            document.getElementById('app-nav-signup').style.display = 'inline-block';
+            document.getElementById('app-nav-logout').style.display = 'none';
+        }
+    } catch (err) {
+        // Not logged in
+        document.getElementById('app-nav-login').style.display = 'inline-block';
+        document.getElementById('app-nav-signup').style.display = 'inline-block';
+        document.getElementById('app-nav-logout').style.display = 'none';
+    }
+}
+
+// Logout handler for app page
+async function handleAppLogout() {
+    try {
+        const response = await fetch('/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        // Show success modal
+        showSuccessModal("Logged Out", "You have been successfully logged out!");
+        
+        // Update navbar after a short delay
+        setTimeout(() => {
+            checkAppAuthStatus();
+            // Redirect to home after modal is closed
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 500);
+        }, 1500);
+    } catch (err) {
+        console.error('Logout error:', err);
+        showPopup('Error logging out. Please try again.');
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    changeLanguage('en'); // Initialize with English
+    updateSubscriptionsContent();
+    checkAppAuthStatus(); // Check auth status for navbar
+    checkLogin(); // Trigger login check to initialize app
+});
+</script>
+
+</body>
+</html>

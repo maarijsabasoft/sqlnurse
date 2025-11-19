@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SQL Nurse - Authentication</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4bb543;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-size: cover;
+            color: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+        }
+        
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            margin-top: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .tabs button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            background: transparent;
+            color: var(--gray);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tabs button.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .tabcontent {
+            display: none;
+            padding: 20px 0;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+        
+        .tabcontent.active {
+            display: block;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-light);
+            background: white;
+            color: var(--dark);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        button.submit {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+        
+        /* Override width for submit button in OTP actions */
+        .otp-actions button.submit {
+            width: auto;
+            margin-top: 0;
+        }
+        
+        button.submit:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .oauth-buttons {
+            margin-top: 20px;
+        }
+        
+        .oauth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-light);
+            background: white;
+            color: var(--dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+        
+        .oauth-btn:hover {
+            background: var(--gray-light);
+            transform: translateY(-2px);
+        }
+        
+        .oauth-btn img {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .oauth-btn.google { 
+            background: #4285F4; 
+            color: #fff; 
+            border-color: #4285F4;
+        }
+        
+        .oauth-btn.github { 
+            background: #24292e; 
+            color: #fff; 
+            border-color: #24292e;
+        }
+        
+        .error {
+            color: var(--danger);
+            margin-top: 10px;
+            display: none;
+            text-align: center;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .oauth-buttons {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* OTP popup styles */
+        .otp-popup {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .otp-content {
+            background: #fff;
+            color: var(--dark);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .otp-content h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .otp-content p {
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        #otp-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .otp-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .otp-actions .submit {
+            flex: 2;
+            min-width: 150px;
+            width: auto;
+        }
+
+        .otp-actions .cancel {
+            flex: 1;
+            background: var(--gray);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 100px;
+            width: auto;
+        }
+
+        .otp-actions .cancel:hover {
+            background: #555;
+        }
+
+        /* Success Modal Styles */
+        .success-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .success-content {
+            background: #fff;
+            color: var(--dark);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .success-content .success-icon {
+            font-size: 3rem;
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+
+        .success-content h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .success-content p {
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .success-content button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .success-content button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1>SQL Nurse</h1>
+        <div class="tabs">
+            <button class="tablinks active" onclick="openTab('login')">Login</button>
+            <button class="tablinks" onclick="openTab('signup')">Sign Up</button>
+        </div>
+        <div id="login" class="tabcontent active">
+            <input type="email" id="login-email" placeholder="Email" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button class="submit" onclick="login()">Login</button>
+            <p class="error" id="login-error"></p>
+            <div class="oauth-buttons">
+                <a href="{{ url_for('google_login') }}" class="oauth-btn google" aria-label="Login with Google">
+                    <img src="https://www.google.com/favicon.ico" alt="Google logo"> Login with Google
+                </a>
+                <a href="{{ url_for('github_login') }}" class="oauth-btn github" aria-label="Login with GitHub">
+                    <img src="https://github.githubassets.com/favicons/favicon.png" alt="GitHub logo"> Login with GitHub
+                </a>
+            </div>
+        </div>
+        <div id="signup" class="tabcontent">
+            <input type="email" id="signup-email" placeholder="Email" required>
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <button class="submit" onclick="signup()">Sign Up</button>
+            <p class="error" id="signup-error"></p>
+            <div class="oauth-buttons">
+                <a href="{{ url_for('google_login') }}" class="oauth-btn google" aria-label="Sign up with Google">
+                    <img src="https://www.google.com/favicon.ico" alt="Google logo"> Sign up with Google
+                </a>
+                <a href="{{ url_for('github_login') }}" class="oauth-btn github" aria-label="Sign up with GitHub">
+                    <img src="https://github.githubassets.com/favicons/favicon.png" alt="GitHub logo"> Sign up with GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ OTP Popup -->
+    <div id="otp-popup" class="otp-popup">
+      <div class="otp-content">
+        <h2>Email Verification</h2>
+        <p id="otp-message">A verification code has been sent to your email.</p>
+        <input type="text" id="otp-input" placeholder="Enter your 6-digit code">
+        <div class="otp-actions">
+          <button id="verify-otp-btn" class="submit">Verify</button>
+          <button id="cancel-otp-btn" class="cancel">Cancel</button>
+        </div>
+        <p class="error" id="otp-error"></p>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="success-modal">
+      <div class="success-content">
+        <div class="success-icon">✓</div>
+        <h2 id="success-title">Success!</h2>
+        <p id="success-message"></p>
+        <button onclick="closeSuccessModal()">OK</button>
+      </div>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            document.querySelectorAll('.tabcontent').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tablinks').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`button[onclick="openTab('${tabName}')"]`).classList.add('active');
+            document.getElementById('login-error').style.display = 'none';
+            document.getElementById('signup-error').style.display = 'none';
+        }
+
+        function showSuccessModal(title, message) {
+            document.getElementById('success-title').textContent = title;
+            document.getElementById('success-message').textContent = message;
+            document.getElementById('success-modal').style.display = 'flex';
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').style.display = 'none';
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const error = document.getElementById('login-error');
+            if (!email || !password) {
+                error.textContent = 'Email and password are required';
+                error.style.display = 'block';
+                return;
+            }
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.error) {
+                    error.textContent = data.error;
+                    error.style.display = 'block';
+                } else {
+                    // Show success modal
+                    showSuccessModal('Login Successful!', 'You have been successfully logged in.');
+                    // Redirect after modal is shown
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
+                }
+            } catch (err) {
+                error.textContent = 'An error occurred. Please try again.';
+                error.style.display = 'block';
+            }
+        }
+
+        function showOtpPopup(message) {
+            document.getElementById('otp-message').textContent = message;
+            document.getElementById('otp-input').value = '';
+            document.getElementById('otp-error').style.display = 'none';
+            document.getElementById('otp-popup').style.display = 'flex';
+        }
+
+        function hideOtpPopup() {
+            document.getElementById('otp-popup').style.display = 'none';
+        }
+
+        async function signup() {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const error = document.getElementById('signup-error');
+
+            if (!email || !password) {
+                error.textContent = 'Email and password are required';
+                error.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    error.textContent = data.error;
+                    error.style.display = 'block';
+                } 
+                else if (data.status === 'otp_sent') {
+                    showOtpPopup(data.message);
+                    document.getElementById('verify-otp-btn').onclick = async () => {
+                        const otp_code = document.getElementById('otp-input').value.trim();
+                        const otpError = document.getElementById('otp-error');
+                        if (!otp_code) {
+                            otpError.textContent = 'Please enter the verification code.';
+                            otpError.style.display = 'block';
+                            return;
+                        }
+
+                        const verifyResponse = await fetch('/signup', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password, otp_code }),
+                            credentials: 'include'
+                        });
+
+                        const verifyData = await verifyResponse.json();
+                        if (verifyData.error) {
+                            otpError.textContent = verifyData.error;
+                            otpError.style.display = 'block';
+                        } else {
+                            hideOtpPopup();
+                            // Show success modal
+                            showSuccessModal('Signup Successful!', verifyData.message || 'Your account has been created and verified successfully!');
+                            // Redirect after modal is shown
+                            setTimeout(() => {
+                                window.location.href = verifyData.redirect;
+                            }, 1500);
+                        }
+                    };
+
+                    document.getElementById('cancel-otp-btn').onclick = () => hideOtpPopup();
+                }
+                else if (data.status === 'success') {
+                    alert('Signup complete!');
+                    window.location.href = data.redirect;
+                } 
+                else {
+                    error.textContent = 'Unexpected response.';
+                    error.style.display = 'block';
+                }
+
+            } catch (err) {
+                error.textContent = 'An error occurred. Please try again.';
+                error.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

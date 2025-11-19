@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title data-i18n="title">SQL Nurse</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+<link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='android-chrome-192x192.png') }}">
+<link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='android-chrome-512x512.png') }}">
+
+<style>
+:root {
+ --primary: #4361ee;
+ --primary-dark: #3a56d4;
+ --secondary: #7209b7;
+ --accent: #4cc9f0;
+ --light: #f8f9fa;
+ --dark: #212529;
+ --success: #4bb543;
+ --warning: #ffc107;
+ --danger: #dc3545;
+ --gray: #6c757d;
+ --gray-light: #e9ecef;
+ --border-radius: 8px;
+ --box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+ --transition: all 0.3s ease;
+}
+
+* {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+}
+
+body {
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ background-color: var(--light);
+ color: var(--dark);
+ line-height: 1.6;
+ overflow-x: hidden;
+ width: 100vw;
+}
+
+/* Landing Page Styles */
+#landing-page {
+ width: 100vw;
+ overflow-x: hidden;
+}
+
+.hero-section {
+ height: 100vh;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ align-items: center;
+ text-align: center;
+ padding: 0 20px;
+ position: relative;
+ background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+ color: white;
+}
+
+.hero-section h1 {
+ font-size: 3.5rem;
+ margin-bottom: 20px;
+ font-weight: 700;
+}
+
+.hero-section p {
+ font-size: 1.3rem;
+ max-width: 700px;
+ margin-bottom: 40px;
+ opacity: 0.9;
+ line-height: 1.6;
+}
+
+.cta-button {
+ padding: 12px 30px;
+ font-size: 1.1rem;
+ border-radius: var(--border-radius);
+ border: none;
+ cursor: pointer;
+ background: white;
+ color: var(--primary);
+ font-weight: 600;
+ transition: var(--transition);
+ box-shadow: var(--box-shadow);
+}
+
+.cta-button:hover {
+ transform: translateY(-3px);
+ box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.section {
+ padding: 80px 20px;
+ max-width: 1200px;
+ margin: 0 auto;
+}
+
+.section h2 {
+ text-align: center;
+ font-size: 2.5rem;
+ margin-bottom: 50px;
+ color: var(--dark);
+ position: relative;
+}
+
+.section h2:after {
+ content: '';
+ display: block;
+ width: 80px;
+ height: 4px;
+ background: var(--primary);
+ margin: 15px auto 0;
+ border-radius: 2px;
+}
+
+.features-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+ gap: 30px;
+}
+
+.feature-card {
+ background: white;
+ border-radius: var(--border-radius);
+ padding: 30px;
+ box-shadow: var(--box-shadow);
+ transition: var(--transition);
+ text-align: center;
+ border-top: 4px solid var(--primary);
+}
+
+.feature-card:hover {
+ transform: translateY(-10px);
+ box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.feature-card h3 {
+ color: var(--dark);
+ margin-bottom: 15px;
+ font-size: 1.5rem;
+}
+
+.feature-card p {
+ color: var(--gray);
+ line-height: 1.6;
+}
+
+.feature-icon {
+ font-size: 3rem;
+ margin-bottom: 20px;
+ color: var(--primary);
+}
+
+.how-it-works {
+ background: white;
+ border-radius: var(--border-radius);
+ padding: 50px;
+ box-shadow: var(--box-shadow);
+}
+
+.steps-container {
+ display: flex;
+ flex-wrap: wrap;
+ justify-content: center;
+ gap: 30px;
+ margin-top: 40px;
+}
+
+.step {
+ flex: 1;
+ min-width: 250px;
+ text-align: center;
+ padding: 20px;
+}
+
+.step-number {
+ display: inline-block;
+ width: 60px;
+ height: 60px;
+ line-height: 60px;
+ border-radius: 50%;
+ background: var(--primary);
+ color: white;
+ font-size: 1.5rem;
+ font-weight: bold;
+ margin-bottom: 20px;
+}
+
+.pricing-container {
+ display: flex;
+ flex-wrap: wrap;
+ justify-content: center;
+ gap: 30px;
+}
+
+.pricing-card {
+ background: white;
+ border-radius: var(--border-radius);
+ padding: 40px 30px;
+ box-shadow: var(--box-shadow);
+ text-align: center;
+ flex: 1;
+ min-width: 250px;
+ max-width: 300px;
+ transition: var(--transition);
+ position: relative;
+}
+
+.pricing-card:hover {
+ transform: scale(1.03);
+}
+
+.pricing-card.featured {
+ border: 2px solid var(--primary);
+ transform: scale(1.05);
+}
+
+.pricing-card.featured::before {
+ content: "Most Popular";
+ position: absolute;
+ top: -15px;
+ left: 50%;
+ transform: translateX(-50%);
+ background: var(--primary);
+ color: white;
+ padding: 5px 15px;
+ border-radius: 20px;
+ font-size: 0.8rem;
+ font-weight: bold;
+}
+
+.pricing-card h3 {
+ font-size: 1.8rem;
+ margin-bottom: 20px;
+ color: var(--dark);
+}
+
+.price {
+ font-size: 2.5rem;
+ font-weight: bold;
+ margin: 20px 0;
+ color: var(--primary);
+}
+
+.price-period {
+ font-size: 1rem;
+ color: var(--gray);
+}
+
+.pricing-features {
+ list-style: none;
+ padding: 0;
+ margin: 30px 0;
+ text-align: left;
+}
+
+.pricing-features li {
+ padding: 10px 0;
+ border-bottom: 1px solid var(--gray-light);
+ color: var(--gray);
+ display: flex;
+ align-items: center;
+}
+
+.pricing-features li:before {
+ content: '✓';
+ color: var(--success);
+ margin-right: 10px;
+ font-weight: bold;
+}
+
+.pricing-features li:last-child {
+ border-bottom: none;
+}
+
+.faq-container {
+ max-width: 800px;
+ margin: 0 auto;
+}
+
+.faq-item {
+ margin-bottom: 20px;
+ border: 1px solid var(--gray-light);
+ border-radius: var(--border-radius);
+ overflow: hidden;
+ background: white;
+}
+
+.faq-question {
+ padding: 20px;
+ background: var(--gray-light);
+ cursor: pointer;
+ font-weight: 600;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ transition: var(--transition);
+}
+
+.faq-question:hover {
+ background: #dae0e5;
+}
+
+.faq-answer {
+ padding: 0 20px;
+ max-height: 0;
+ overflow: hidden;
+ transition: max-height 0.3s, padding 0.3s;
+}
+
+.faq-item.active .faq-answer {
+ padding: 20px;
+ max-height: 500px;
+}
+
+.final-cta {
+ text-align: center;
+ padding: 80px 20px;
+ background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+ border-radius: var(--border-radius);
+ color: white;
+}
+
+.final-cta h2 {
+ color: white;
+ margin-bottom: 20px;
+}
+
+.final-cta h2:after {
+ background: white;
+}
+
+.final-cta p {
+ max-width: 600px;
+ margin: 0 auto 40px;
+ font-size: 1.2rem;
+ opacity: 0.9;
+}
+
+/* Navigation */
+.navbar {
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ padding: 20px;
+ z-index: 1000;
+ background: rgba(255, 255, 255, 0.95);
+ backdrop-filter: blur(10px);
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ transition: var(--transition);
+ box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.navbar.scrolled {
+ background: rgba(255, 255, 255, 0.98);
+ padding: 15px 20px;
+}
+
+.navbar-brand {
+ font-size: 1.5rem;
+ font-weight: 700;
+ color: var(--primary);
+}
+
+.navbar-nav {
+ display: flex;
+ gap: 30px;
+}
+
+.navbar-nav a {
+ color: var(--dark);
+ text-decoration: none;
+ font-weight: 500;
+ transition: var(--transition);
+ padding: 5px 0;
+ position: relative;
+}
+
+.navbar-nav a:after {
+ content: '';
+ position: absolute;
+ bottom: 0;
+ left: 0;
+ width: 0;
+ height: 2px;
+ background: var(--primary);
+ transition: var(--transition);
+}
+
+.navbar-nav a:hover:after {
+ width: 100%;
+}
+
+.navbar-nav .nav-button {
+ background: var(--primary);
+ color: white;
+ padding: 8px 20px;
+ border-radius: var(--border-radius);
+ transition: var(--transition);
+}
+
+.navbar-nav .nav-button:hover {
+ background: var(--primary-dark);
+ transform: translateY(-2px);
+}
+
+.navbar-nav .nav-button:after {
+ display: none;
+}
+
+/* Buttons */
+.btn {
+ padding: 10px 20px;
+ border-radius: var(--border-radius);
+ border: none;
+ cursor: pointer;
+ font-weight: 600;
+ transition: var(--transition);
+ display: inline-block;
+ text-align: center;
+ font-size: 0.95rem;
+}
+
+.btn-primary {
+ background: var(--primary);
+ color: white;
+}
+
+.btn-primary:hover {
+ background: var(--primary-dark);
+ transform: translateY(-2px);
+ box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+}
+
+.btn-outline {
+ background: transparent;
+ color: var(--primary);
+ border: 2px solid var(--primary);
+}
+
+.btn-outline:hover {
+ background: var(--primary);
+ color: white;
+ transform: translateY(-2px);
+}
+
+.btn-small {
+ padding: 8px 16px;
+ font-size: 0.9rem;
+ border: 1px solid white !important;
+ color: white;
+}
+
+/* Auth Modal */
+.auth-modal {
+ display: none;
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0, 0, 0, 0.7);
+ z-index: 2000;
+ justify-content: center;
+ align-items: center;
+}
+
+.auth-container {
+ background: white;
+ border-radius: var(--border-radius);
+ padding: 40px;
+ width: 100%;
+ max-width: 400px;
+ box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+ position: relative;
+}
+
+.auth-container h2 {
+ text-align: center;
+ margin-bottom: 30px;
+ color: var(--dark);
+}
+
+.auth-tabs {
+ display: flex;
+ margin-bottom: 20px;
+ border-bottom: 1px solid var(--gray-light);
+}
+
+.auth-tab {
+ flex: 1;
+ padding: 12px;
+ text-align: center;
+ background: none;
+ border: none;
+ color: var(--gray);
+ cursor: pointer;
+ font-weight: 600;
+ transition: var(--transition);
+ border-bottom: 2px solid transparent;
+}
+
+.auth-tab.active {
+ color: var(--primary);
+ border-bottom: 2px solid var(--primary);
+}
+
+.auth-form {
+ display: none;
+}
+
+.auth-form.active {
+ display: block;
+}
+
+.auth-form input {
+ width: 100%;
+ padding: 12px;
+ margin-bottom: 15px;
+ border: 1px solid var(--gray-light);
+ border-radius: var(--border-radius);
+ font-size: 1rem;
+ transition: var(--transition);
+}
+
+.auth-form input:focus {
+ border-color: var(--primary);
+ outline: none;
+ box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+.auth-form button {
+ width: 100%;
+ margin-top: 10px;
+}
+
+.auth-error {
+ color: var(--danger);
+ margin-top: 10px;
+ display: none;
+ text-align: center;
+}
+
+.close-auth {
+ position: absolute;
+ top: 15px;
+ right: 15px;
+ background: none;
+ border: none;
+ font-size: 1.5rem;
+ color: var(--gray);
+ cursor: pointer;
+ transition: var(--transition);
+}
+
+.close-auth:hover {
+ color: var(--dark);
+}
+
+.oauth-buttons {
+ margin-top: 20px;
+ display: flex;
+ flex-direction: column;
+ gap: 10px;
+}
+
+.oauth-btn {
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ background: white;
+ color: var(--dark);
+ border: 1px solid var(--gray-light);
+ border-radius: var(--border-radius);
+ padding: 10px;
+ font-weight: 500;
+ text-decoration: none;
+ transition: var(--transition);
+}
+
+.oauth-btn:hover {
+ background: var(--gray-light);
+ transform: translateY(-2px);
+}
+
+.oauth-btn img {
+ width: 20px;
+ height: 20px;
+ margin-right: 10px;
+}
+
+/* Footer */
+footer {
+ background: var(--dark);
+ color: white;
+ padding: 60px 20px 30px;
+ text-align: center;
+}
+
+.footer-content {
+ max-width: 1200px;
+ margin: 0 auto;
+ display: flex;
+ flex-wrap: wrap;
+ justify-content: space-between;
+ gap: 40px;
+ margin-bottom: 40px;
+}
+
+.footer-section {
+ flex: 1;
+ min-width: 200px;
+}
+
+.footer-section h3 {
+ margin-bottom: 20px;
+ color: white;
+}
+
+.footer-section p, .footer-section a {
+ color: rgba(255, 255, 255, 0.7);
+ margin-bottom: 10px;
+ display: block;
+ text-decoration: none;
+ transition: var(--transition);
+}
+
+.footer-section a:hover {
+ color: white;
+}
+
+.footer-bottom {
+ border-top: 1px solid rgba(255, 255, 255, 0.1);
+ padding-top: 20px;
+ color: rgba(255, 255, 255, 0.7);
+}
+
+.language-container {
+ position: fixed;
+ bottom: 20px;
+ right: 20px;
+ z-index: 2000;
+}
+
+.language-icon {
+ background: var(--primary);
+ color: white;
+ border-radius: 50%;
+ width: 50px;
+ height: 50px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ cursor: pointer;
+ box-shadow: var(--box-shadow);
+ font-size: 1.2rem;
+ transition: var(--transition);
+}
+
+.language-icon:hover {
+ background: var(--primary-dark);
+ transform: scale(1.1);
+}
+
+.language-menu {
+ display: none;
+ position: absolute;
+ bottom: 60px;
+ right: 0;
+ background: white;
+ border-radius: var(--border-radius);
+ box-shadow: var(--box-shadow);
+ min-width: 150px;
+ z-index: 2001;
+}
+
+.language-menu button {
+ display: block;
+ width: 100%;
+ padding: 10px;
+ border: none;
+ background: none;
+ text-align: left;
+ color: var(--dark);
+ font-size: 1rem;
+ cursor: pointer;
+ transition: var(--transition);
+}
+
+.language-menu button:hover {
+ background: var(--gray-light);
+}
+
+.language-menu button.active {
+ background: var(--primary);
+ color: white;
+}
+
+[dir="rtl"] {
+ direction: rtl;
+ text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+ .hero-section h1 {
+  font-size: 2.5rem;
+ }
+
+ .navbar-nav {
+  display: none;
+ }
+
+ .steps-container, .pricing-container {
+  flex-direction: column;
+  align-items: center;
+ }
+
+ .pricing-card {
+  max-width: 100%;
+ }
+
+ .footer-content {
+  flex-direction: column;
+  text-align: center;
+ }
+}
+#nav-login {
+  display: none !important;
+}
+
+</style>
+</head>
+<body>
+<!-- Landing Page -->
+<div id="landing-page">
+ <nav class="navbar">
+  <div class="navbar-brand" data-i18n="navbar_brand">SQL Nurse</div>
+  <div class="navbar-nav">
+   <a href="#features" data-i18n="nav_features">Features</a>
+   <a href="#how-it-works" data-i18n="nav_how_it_works">How It Works</a>
+   <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
+   <a href="#faq" data-i18n="nav_faq">FAQ</a>
+   <a href="{{ url_for('auth_page') }}" class="nav-button" id="nav-login" style="display: none;" data-i18n="nav_login">Login & Signup</a>
+   <a href="{{ url_for('auth_page') }}" class="nav-button" id="nav-signup" style="display: none;" data-i18n="nav_signup">Sign Up</a>
+   <button class="nav-button" id="nav-logout" style="display: none;" onclick="handleLogout()" data-i18n="nav_logout">Logout</button>
+  </div>
+ </nav>
+
+ <section class="hero-section">
+  <h1 data-i18n="hero_title">Revolutionize Your Database Management</h1>
+  <p data-i18n="hero_subtitle">SQL Nurse is an all-in-one platform that simplifies database interaction, query generation, table management, and data visualization with an intuitive interface.</p>
+  <button class="btn btn-outline btn-small" onclick="handleGetStarted()" data-i18n="get_started">Get Started</button>
+ </section>
+
+ <section class="section" id="features">
+  <h2 data-i18n="features_title">Powerful Features</h2>
+  <div class="features-grid">
+   <div class="feature-card">
+    <div class="feature-icon">🔍</div>
+    <h3 data-i18n="feature_query_title">Smart Query Generation</h3>
+    <p data-i18n="feature_query_desc">Ask questions in plain English and get accurate SQL queries generated automatically.</p>
+   </div>
+   <div class="feature-card">
+    <div class="feature-icon">📊</div>
+    <h3 data-i18n="feature_visualization_title">Data Visualization</h3>
+    <p data-i18n="feature_visualization_desc">Transform your query results into beautiful charts and graphs with a single click.</p>
+   </div>
+   <div class="feature-card">
+    <div class="feature-icon">🔄</div>
+    <h3 data-i18n="feature_multidb_title">Multi-Database Support</h3>
+    <p data-i18n="feature_multidb_desc">Connect to SQLite, MySQL, PostgreSQL and more with seamless integration.</p>
+   </div>
+   <div class="feature-card">
+    <div class="feature-icon">⚡</div>
+    <h3 data-i18n="feature_management_title">Real-time Management</h3>
+    <p data-i18n="feature_management_desc">Add, edit, and delete table rows directly through our intuitive interface.</p>
+   </div>
+   <div class="feature-card">
+    <div class="feature-icon">🛡️</div>
+    <h3 data-i18n="feature_security_title">Secure & Private</h3>
+    <p data-i18n="feature_security_desc">Your data stays secure with enterprise-grade encryption and privacy controls.</p>
+   </div>
+   <div class="feature-card">
+    <div class="feature-icon">🤖</div>
+    <h3 data-i18n="feature_ai_title">AI-Powered Insights</h3>
+    <p data-i18n="feature_ai_desc">Get intelligent suggestions and insights based on your database structure.</p>
+   </div>
+  </div>
+ </section>
+
+ <section class="section" id="how-it-works">
+  <h2 data-i18n="how_it_works_title">How It Works</h2>
+  <div class="how-it-works">
+   <div class="steps-container">
+    <div class="step">
+     <div class="step-number">1</div>
+     <h3 data-i18n="step_connect_title">Connect Your Database</h3>
+     <p data-i18n="step_connect_desc">Link your existing database or create a new one from scratch.</p>
+    </div>
+    <div class="step">
+     <div class="step-number">2</div>
+     <h3 data-i18n="step_query_title">Ask Questions</h3>
+     <p data-i18n="step_query_desc">Use natural language to query your data without writing SQL.</p>
+    </div>
+    <div class="step">
+     <div class="step-number">3</div>
+     <h3 data-i18n="step_results_title">Get Results & Visualize</h3>
+     <p data-i18n="step_results_desc">View query results and transform them into insightful visualizations.</p>
+    </div>
+    <div class="step">
+     <div class="step-number">4</div>
+     <h3 data-i18n="step_manage_title">Manage & Optimize</h3>
+     <p data-i18n="step_manage_desc">Easily manage your tables and optimize your database structure.</p>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <section class="section" id="pricing">
+  <h2 data-i18n="pricing_title">Simple, Transparent Pricing</h2>
+  <div class="pricing-container">
+   <div class="pricing-card">
+    <h3 data-i18n="plan_free_title">Free</h3>
+    <div class="price">$0<span class="price-period" data-i18n="price_period">/month</span></div>
+    <ul class="pricing-features">
+     <li data-i18n="plan_free_feature1">Connect Databases</li>
+     <li data-i18n="plan_free_feature2">Create Databases</li>
+     <li data-i18n="plan_free_feature3">Load Schemas</li>
+    </ul>
+   </div>
+   <div class="pricing-card featured">
+    <h3 data-i18n="plan_standard_title">Standard</h3>
+    <div class="price">$15<span class="price-period" data-i18n="price_period">/month</span></div>
+    <ul class="pricing-features">
+     <li data-i18n="plan_standard_feature1">Load Databases</li>
+     <li data-i18n="plan_standard_feature2">Advanced Query Generation</li>
+     <li data-i18n="plan_standard_feature3">Connect Databases</li>
+     <li data-i18n="plan_standard_feature4">Create Databases</li>
+     <li data-i18n="plan_standard_feature5">Load Schemas</li>
+    </ul>
+   </div>
+   <div class="pricing-card">
+    <h3 data-i18n="plan_premium_title">Premium</h3>
+    <div class="price">$25<span class="price-period" data-i18n="price_period">/month</span></div>
+    <ul class="pricing-features">
+     <li data-i18n="plan_premium_feature1">Advanced Visualizations</li>
+     <li data-i18n="plan_premium_feature2">Load Databases</li>
+     <li data-i18n="plan_premium_feature3">Advanced Query Generation</li>
+     <li data-i18n="plan_premium_feature4">Connect Databases</li>
+     <li data-i18n="plan_premium_feature5">Create Databases</li>
+     <li data-i18n="plan_premium_feature6">Load Schemas</li>
+    </ul>
+   </div>
+  </div>
+ </section>
+
+ <section class="section" id="faq">
+  <h2 data-i18n="faq_title">Frequently Asked Questions</h2>
+  <div class="faq-container">
+   <div class="faq-item">
+    <div class="faq-question" data-i18n="faq_q1">What databases does SQL Nurse support?<span>+</span></div>
+    <div class="faq-answer" data-i18n="faq_a1">SQL Nurse currently supports SQLite, MySQL, and PostgreSQL. We're continuously working to add support for more database systems.</div>
+   </div>
+   <div class="faq-item">
+    <div class="faq-question" data-i18n="faq_q2">Is my data secure?<span>+</span></div>
+    <div class="faq-answer" data-i18n="faq_a2">Yes, security is our top priority. We use industry-standard encryption for all data transfers and storage. Your database credentials are never stored in plain text.</div>
+   </div>
+   <div class="faq-item">
+    <div class="faq-question" data-i18n="faq_q3">Can I cancel my subscription anytime?<span>+</span></div>
+    <div class="faq-answer" data-i18n="faq_a3">Absolutely! You can cancel your subscription at any time. If you cancel, you'll continue to have access to your paid features until the end of your billing period.</div>
+   </div>
+   <div class="faq-item">
+    <div class="faq-question" data-i18n="faq_q4">Do you offer team plans?<span>+</span></div>
+    <div class="faq-answer" data-i18n="faq_a4">Currently, we offer individual plans only. However, we're actively developing team collaboration features and expect to launch team plans in the near future.</div>
+   </div>
+   <div class="faq-item">
+    <div class="faq-question" data-i18n="faq_q5">How accurate is the natural language query generation?<span>+</span></div>
+    <div class="faq-answer" data-i18n="faq_a5">Our AI model has been trained on thousands of database schemas and queries, achieving over 90% accuracy for common query types. For complex queries, we provide the generated SQL for you to review and edit if needed.</div>
+   </div>
+  </div>
+ </section>
+
+ <section class="section final-cta">
+  <h2 data-i18n="cta_title">Ready to Transform Your Database Workflow?</h2>
+  <p data-i18n="cta_subtitle">Join thousands of users who have simplified their database management with SQL Nurse.</p>
+  <button class="btn btn-outline btn-small" onclick="handleGetStarted()" id="final-cta-btn" data-i18n="get_started">Get Started</button>
+ </section>
+
+ <footer>
+  <div class="footer-content">
+   <div class="footer-section">
+    <h3 data-i18n="footer_brand">SQL Nurse</h3>
+    <p data-i18n="footer_brand_desc">Your complete database management and visualization solution.</p>
+   </div>
+   <div class="footer-section">
+    <h3 data-i18n="footer_product">Product</h3>
+    <a href="#features" data-i18n="nav_features">Features</a>
+    <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
+    <a href="#faq" data-i18n="nav_faq">FAQ</a>
+   </div>
+   <div class="footer-section">
+    <h3 data-i18n="footer_company">Company</h3>
+    <p style="color: rgba(255, 255, 255, 0.7);">About Us</p>
+    <p style="color: rgba(255, 255, 255, 0.7);">Blog</p>
+    <p style="color: rgba(255, 255, 255, 0.7);">Contact</p>
+   </div>
+   <div class="footer-section">
+    <h3 data-i18n="footer_legal">Legal</h3>
+    <p style="color: rgba(255, 255, 255, 0.7);">Privacy Policy</p>
+    <p style="color: rgba(255, 255, 255, 0.7);">Terms of Service</p>
+   </div>
+  </div>
+  <div class="footer-bottom">
+   <p data-i18n="footer_copyright">&copy; 2023 SQL Nurse. All rights reserved.</p>
+  </div>
+ </footer>
+
+ <div class="language-container">
+  <div class="language-icon" onclick="toggleLanguageMenu()">🌐</div>
+  <div class="language-menu" id="language-menu">
+   <button class="language-option active" data-lang="en" data-i18n="lang_english">English</button>
+   <button class="language-option" data-lang="fr" data-i18n="lang_french">French</button>
+   <button class="language-option" data-lang="de" data-i18n="lang_german">German</button>
+   <button class="language-option" data-lang="pt" data-i18n="lang_portuguese">Portuguese</button>
+   <button class="language-option" data-lang="nl" data-i18n="lang_dutch">Dutch</button>
+   <button class="language-option" data-lang="zh" data-i18n="lang_chinese">Chinese</button>
+   <button class="language-option" data-lang="ar" data-i18n="lang_arabic">Arabic</button>
+   <button class="language-option" data-lang="es" data-i18n="lang_spanish">Spanish</button>
+   <button class="language-option" data-lang="it" data-i18n="lang_italian">Italian</button>
+  </div>
+ </div>
+</div>
+
+<!-- Auth Modal -->
+<!-- <div class="111auth-modal" id="1111auth-modal">
+ <div class="auth-container">
+  <button class="close-auth" onclick="closeAuthModal()">&times;</button>
+  <h2 data-i18n="auth_title">Welcome to SQL Nurse</h2>
+  <div class="auth-tabs">
+   <button class="auth-tab active" onclick="switchAuthTab('login')" data-i18n="auth_login">Login</button>
+   <button class="auth-tab" onclick="switchAuthTab('signup')" data-i18n="auth_signup">Sign Up</button>
+  </div>
+  <div id="login-form" class="auth-form active">
+   <input type="email" id="login-email" data-i18n-placeholder="email_placeholder" required>
+   <input type="password" id="login-password" data-i18n-placeholder="password_placeholder" required>
+   <button class="submit" onclick="login()" data-i18n="auth_login">Login</button>
+   <p class="error" id="login-error" data-i18n="auth_error"></p>
+   <div class="oauth-buttons">
+    <a href="{{ url_for('google_login') }}" class="oauth-btn google" aria-label="Login with Google" data-i18n="login_google">
+     <img src="https://www.google.com/favicon.ico" alt="Google logo"> Login with Google
+    </a>
+    <a href="{{ url_for('github_login') }}" class="oauth-btn github" aria-label="Login with GitHub" data-i18n="login_github">
+     <img src="https://github.githubassets.com/favicons/favicon.png" alt="GitHub logo"> Login with GitHub
+    </a>
+   </div>
+  </div>
+  <div id="signup-form" class="auth-form">
+   <input type="email" id="signup-email" data-i18n-placeholder="email_placeholder" required>
+   <input type="password" id="signup-password" data-i18n-placeholder="password_placeholder" required>
+   <button class="submit" onclick="signup()" data-i18n="auth_signup">Sign Up</button>
+   <p class="error" id="signup-error" data-i18n="auth_error"></p>
+   <div class="oauth-buttons">
+    <a href="{{ url_for('google_login') }}" class="oauth-btn google" aria-label="Login with Google" data-i18n="login_google">
+     <img src="https://www.google.com/favicon.ico" alt="Google logo"> Login with Google
+    </a>
+    <a href="{{ url_for('github_login') }}" class="oauth-btn github" aria-label="Login with GitHub" data-i18n="login_github">
+     <img src="https://github.githubassets.com/favicons/favicon.png" alt="GitHub logo"> Login with GitHub
+    </a>
+   </div>
+  </div>
+ </div>
+</div> -->
+
+<script>
+let currentLanguage = 'en';
+
+const translations = {
+    en: {
+        title: "SQL Nurse",
+        navbar_brand: "SQL Nurse",
+        nav_features: "Features",
+        nav_how_it_works: "How It Works",
+        nav_pricing: "Pricing",
+        nav_faq: "FAQ",
+        nav_login: "Login",
+        nav_signup:"Login/Signup",
+        hero_title: "Revolutionize Your Database Management",
+        hero_subtitle: "SQL Nurse is an all-in-one platform that simplifies database interaction, query generation, table management, and data visualization with an intuitive interface.",
+        get_started: "Get Started",
+        features_title: "Powerful Features",
+        feature_query_title: "Smart Query Generation",
+        feature_query_desc: "Ask questions in plain English and get accurate SQL queries generated automatically.",
+        feature_visualization_title: "Data Visualization",
+        feature_visualization_desc: "Transform your query results into beautiful charts and graphs with a single click.",
+        feature_multidb_title: "Multi-Database Support",
+        feature_multidb_desc: "Connect to SQLite, MySQL, PostgreSQL and more with seamless integration.",
+        feature_management_title: "Real-time Management",
+        feature_management_desc: "Add, edit, and delete table rows directly through our intuitive interface.",
+        feature_security_title: "Secure & Private",
+        feature_security_desc: "Your data stays secure with enterprise-grade encryption and privacy controls.",
+        feature_ai_title: "AI-Powered Insights",
+        feature_ai_desc: "Get intelligent suggestions and insights based on your database structure.",
+        how_it_works_title: "How It Works",
+        step_connect_title: "Connect Your Database",
+        step_connect_desc: "Link your existing database or create a new one from scratch.",
+        step_query_title: "Ask Questions",
+        step_query_desc: "Use natural language to query your data without writing SQL.",
+        step_results_title: "Get Results & Visualize",
+        step_results_desc: "View query results and transform them into insightful visualizations.",
+        step_manage_title: "Manage & Optimize",
+        step_manage_desc: "Easily manage your tables and optimize your database structure.",
+        pricing_title: "Simple, Transparent Pricing",
+        plan_free_title: "Free",
+        plan_free_feature1: "Connect Databases",
+        plan_free_feature2: "Create Databases",
+        plan_free_feature3: "Load Schemas",
+        plan_standard_title: "Standard",
+        plan_standard_feature1: "Load Databases",
+        plan_standard_feature2: "Advanced Query Generation",
+        plan_standard_feature3: "Connect Databases",
+        plan_standard_feature4: "Create Databases",
+        plan_standard_feature5: "Load Schemas",
+        plan_premium_title: "Premium",
+        plan_premium_feature1: "Advanced Visualizations",
+        plan_premium_feature2: "Load Databases",
+        plan_premium_feature3: "Advanced Query Generation",
+        plan_premium_feature4: "Connect Databases",
+        plan_premium_feature5: "Create Databases",
+        plan_premium_feature6: "Load Schemas",
+        price_period: "/month",
+        most_popular: "Most Popular",
+        faq_title: "Frequently Asked Questions",
+        faq_q1: "What databases does SQL Nurse support?",
+        faq_a1: "SQL Nurse currently supports SQLite, MySQL, and PostgreSQL. We're continuously working to add support for more database systems.",
+        faq_q2: "Is my data secure?",
+        faq_a2: "Yes, security is our top priority. We use industry-standard encryption for all data transfers and storage. Your database credentials are never stored in plain text.",
+        faq_q3: "Can I cancel my subscription anytime?",
+        faq_a3: "Absolutely! You can cancel your subscription at any time. If you cancel, you'll continue to have access to your paid features until the end of your billing period.",
+        faq_q4: "Do you offer team plans?",
+        faq_a4: "Currently, we offer individual plans only. However, we're actively developing team collaboration features and expect to launch team plans in the near future.",
+        faq_q5: "How accurate is the natural language query generation?",
+        faq_a5: "Our AI model has been trained on thousands of database schemas and queries, achieving over 90% accuracy for common query types. For complex queries, we provide the generated SQL for you to review and edit if needed.",
+        cta_title: "Ready to Transform Your Database Workflow?",
+        cta_subtitle: "Join thousands of users who have simplified their database management with SQL Nurse.",
+        footer_brand: "SQL Nurse",
+        footer_brand_desc: "Your complete database management and visualization solution.",
+        footer_product: "Product",
+        footer_company: "Company",
+        footer_legal: "Legal",
+        footer_about: "About Us",
+        footer_blog: "Blog",
+        footer_contact: "Contact",
+        footer_privacy: "Privacy Policy",
+        footer_terms: "Terms of Service",
+        footer_copyright: "&copy; 2023 SQL Nurse. All rights reserved.",
+        auth_title: "Welcome to SQL Nurse",
+        auth_login: "Login",
+        auth_signup: "Login/Sign Up",
+        email_placeholder: "Email",
+        password_placeholder: "Password",
+        auth_error: "",
+        login_google: "Login with Google",
+        login_github: "Login with GitHub",
+        lang_english: "English",
+        lang_french: "French",
+        lang_german: "German",
+        lang_portuguese: "Portuguese",
+        lang_dutch: "Dutch",
+        lang_chinese: "Chinese",
+        lang_arabic: "Arabic",
+        lang_spanish: "Spanish",
+        lang_italian: "Italian"
+    },
+    fr: {
+        title: "Infirmière SQL - Gestion Professionnelle des Bases de Données",
+        navbar_brand: "Infirmière SQL",
+        nav_features: "Fonctionnalités",
+        nav_how_it_works: "Comment Ça Marche",
+        nav_pricing: "Tarifs",
+        nav_faq: "FAQ",
+        nav_login: "Connexion",
+        hero_title: "Révolutionnez Votre Gestion de Bases de Données",
+        hero_subtitle: "Infirmière SQL est une plateforme tout-en-un qui simplifie l'interaction avec les bases de données, la génération de requêtes, la gestion des tables et la visualisation des données avec une interface intuitive.",
+        get_started: "Commencer",
+        features_title: "Fonctionnalités Puissantes",
+        feature_query_title: "Génération de Requêtes Intelligente",
+        feature_query_desc: "Posez des questions en langage naturel et obtenez des requêtes SQL précises générées automatiquement.",
+        feature_visualization_title: "Visualisation des Données",
+        feature_visualization_desc: "Transformez vos résultats de requêtes en graphiques et diagrammes attrayants en un seul clic.",
+        feature_multidb_title: "Support Multi-Bases de Données",
+        feature_multidb_desc: "Connectez-vous à SQLite, MySQL, PostgreSQL et plus encore avec une intégration fluide.",
+        feature_management_title: "Gestion en Temps Réel",
+        feature_management_desc: "Ajoutez, modifiez et supprimez des lignes de table directement via notre interface intuitive.",
+        feature_security_title: "Sécurisé et Privé",
+        feature_security_desc: "Vos données restent sécurisées avec un chiffrement de niveau entreprise et des contrôles de confidentialité.",
+        feature_ai_title: "Perspectives Alimentées par l'IA",
+        feature_ai_desc: "Obtenez des suggestions et des idées intelligentes basées sur la structure de votre base de données.",
+        how_it_works_title: "Comment Ça Marche",
+        step_connect_title: "Connectez Votre Base de Données",
+        step_connect_desc: "Liez votre base de données existante ou créez-en une nouvelle à partir de zéro.",
+        step_query_title: "Posez des Questions",
+        step_query_desc: "Utilisez le langage naturel pour interroger vos données sans écrire de SQL.",
+        step_results_title: "Obtenez des Résultats et Visualisez",
+        step_results_desc: "Visualisez les résultats des requêtes et transformez-les en visualisations pertinentes.",
+        step_manage_title: "Gérez et Optimisez",
+        step_manage_desc: "Gérez facilement vos tables et optimisez la structure de votre base de données.",
+        pricing_title: "Tarification Simple et Transparente",
+        plan_free_title: "Gratuit",
+        plan_free_feature1: "Connexion aux Bases de Données",
+        plan_free_feature2: "Création de Bases de Données",
+        plan_free_feature3: "Chargement des Schémas",
+        plan_standard_title: "Standard",
+        plan_standard_feature1: "Chargement des Bases de Données",
+        plan_standard_feature2: "Génération de Requêtes Avancée",
+        plan_standard_feature3: "Connexion aux Bases de Données",
+        plan_standard_feature4: "Création de Bases de Données",
+        plan_standard_feature5: "Chargement des Schémas",
+        plan_premium_title: "Premium",
+        plan_premium_feature1: "Visualisations Avancées",
+        plan_premium_feature2: "Chargement des Bases de Données",
+        plan_premium_feature3: "Génération de Requêtes Avancée",
+        plan_premium_feature4: "Connexion aux Bases de Données",
+        plan_premium_feature5: "Création de Bases de Données",
+        plan_premium_feature6: "Chargement des Schémas",
+        price_period: "/mois",
+        most_popular: "Le Plus Populaire",
+        faq_title: "Questions Fréquemment Posées",
+        faq_q1: "Quelles bases de données Infirmière SQL prend-elle en charge ?",
+        faq_a1: "Infirmière SQL prend actuellement en charge SQLite, MySQL et PostgreSQL. Nous travaillons continuellement à ajouter le support pour d'autres systèmes de bases de données.",
+        faq_q2: "Mes données sont-elles sécurisées ?",
+        faq_a2: "Oui, la sécurité est notre priorité absolue. Nous utilisons un chiffrement standard de l'industrie pour tous les transferts et stockages de données. Vos identifiants de base de données ne sont jamais stockés en texte clair.",
+        faq_q3: "Puis-je annuler mon abonnement à tout moment ?",
+        faq_a3: "Absolument ! Vous pouvez annuler votre abonnement à tout moment. Si vous annulez, vous continuerez à avoir accès aux fonctionnalités payantes jusqu'à la fin de votre période de facturation.",
+        faq_q4: "Proposez-vous des plans pour équipes ?",
+        faq_a4: "Actuellement, nous proposons uniquement des plans individuels. Cependant, nous développons activement des fonctionnalités de collaboration en équipe et prévoyons de lancer des plans pour équipes dans un proche avenir.",
+        faq_q5: "Quelle est la précision de la génération de requêtes en langage naturel ?",
+        faq_a5: "Notre modèle d'IA a été formé sur des milliers de schémas et de requêtes de bases de données, atteignant une précision de plus de 90 % pour les types de requêtes courants. Pour les requêtes complexes, nous fournissons le SQL généré pour que vous puissiez le vérifier et le modifier si nécessaire.",
+        cta_title: "Prêt à Transformer Votre Flux de Travail de Base de Données ?",
+        cta_subtitle: "Rejoignez des milliers d'utilisateurs qui ont simplifié leur gestion de bases de données avec Infirmière SQL.",
+        footer_brand: "Infirmière SQL",
+        footer_brand_desc: "Votre solution complète de gestion et de visualisation de bases de données.",
+        footer_product: "Produit",
+        footer_company: "Entreprise",
+        footer_legal: "Légal",
+        footer_about: "À Propos",
+        footer_blog: "Blog",
+        footer_contact: "Contact",
+        footer_privacy: "Politique de Confidentialité",
+        footer_terms: "Conditions de Service",
+        footer_copyright: "&copy; 2023 Infirmière SQL. Tous droits réservés.",
+        auth_title: "Bienvenue sur Infirmière SQL",
+        auth_login: "Connexion",
+        auth_signup: "Inscription",
+        email_placeholder: "Email",
+        password_placeholder: "Mot de passe",
+        auth_error: "",
+        login_google: "Connexion avec Google",
+        login_github: "Connexion avec GitHub",
+        lang_english: "Anglais",
+        lang_french: "Français",
+        lang_german: "Allemand",
+        lang_portuguese: "Portugais",
+        lang_dutch: "Néerlandais",
+        lang_chinese: "Chinois",
+        lang_arabic: "Arabe",
+        lang_spanish: "Espagnol",
+        lang_italian: "Italien"
+    },
+    de: {
+        title: "SQL-Krankenschwester - Professionelles Datenbankmanagement",
+        navbar_brand: "SQL-Krankenschwester",
+        nav_features: "Funktionen",
+        nav_how_it_works: "Wie es Funktioniert",
+        nav_pricing: "Preise",
+        nav_faq: "FAQ",
+        nav_login: "Anmelden",
+        hero_title: "Revolutionieren Sie Ihr Datenbankmanagement",
+        hero_subtitle: "SQL-Krankenschwester ist eine All-in-One-Plattform, die die Interaktion mit Datenbanken, die Abfragegenerierung, das Tabellenmanagement und die Datenvisualisierung mit einer intuitiven Benutzeroberfläche vereinfacht.",
+        get_started: "Loslegen",
+        features_title: "Leistungsstarke Funktionen",
+        feature_query_title: "Intelligente Abfragegenerierung",
+        feature_query_desc: "Stellen Sie Fragen in einfachem Deutsch und erhalten Sie automatisch generierte, präzise SQL-Abfragen.",
+        feature_visualization_title: "Datenvisualisierung",
+        feature_visualization_desc: "Verwandeln Sie Ihre Abfrageergebnisse mit einem einzigen Klick in ansprechende Diagramme und Grafiken.",
+        feature_multidb_title: "Unterstützung mehrerer Datenbanken",
+        feature_multidb_desc: "Verbinden Sie sich mit SQLite, MySQL, PostgreSQL und mehr mit nahtloser Integration.",
+        feature_management_title: "Echtzeit-Management",
+        feature_management_desc: "Fügen Sie Tabellenzeilen hinzu, bearbeiten oder löschen Sie sie direkt über unsere intuitive Benutzeroberfläche.",
+        feature_security_title: "Sicher & Privat",
+        feature_security_desc: "Ihre Daten bleiben sicher mit Verschlüsselung auf Unternehmensniveau und Datenschutzkontrollen.",
+        feature_ai_title: "KI-gestützte Einblicke",
+        feature_ai_desc: "Erhalten Sie intelligente Vorschläge und Einblicke basierend auf Ihrer Datenbankstruktur.",
+        how_it_works_title: "Wie es Funktioniert",
+        step_connect_title: "Verbinden Sie Ihre Datenbank",
+        step_connect_desc: "Verknüpfen Sie Ihre bestehende Datenbank oder erstellen Sie eine neue von Grund auf.",
+        step_query_title: "Fragen Stellen",
+        step_query_desc: "Verwenden Sie natürliche Sprache, um Ihre Daten ohne SQL zu abfragen.",
+        step_results_title: "Ergebnisse Abrufen & Visualisieren",
+        step_results_desc: "Zeigen Sie Abfrageergebnisse an und verwandeln Sie sie in aussagekräftige Visualisierungen.",
+        step_manage_title: "Verwalten & Optimieren",
+        step_manage_desc: "Verwalten Sie Ihre Tabellen einfach und optimieren Sie Ihre Datenbankstruktur.",
+        pricing_title: "Einfache, Transparente Preise",
+        plan_free_title: "Kostenlos",
+        plan_free_feature1: "Datenbanken Verbinden",
+        plan_free_feature2: "Datenbanken Erstellen",
+        plan_free_feature3: "Schemata Laden",
+        plan_standard_title: "Standard",
+        plan_standard_feature1: "Datenbanken Laden",
+        plan_standard_feature2: "Erweiterte Abfragegenerierung",
+        plan_standard_feature3: "Datenbanken Verbinden",
+        plan_standard_feature4: "Datenbanken Erstellen",
+        plan_standard_feature5: "Schemata Laden",
+        plan_premium_title: "Premium",
+        plan_premium_feature1: "Erweiterte Visualisierungen",
+        plan_premium_feature2: "Datenbanken Laden",
+        plan_premium_feature3: "Erweiterte Abfragegenerierung",
+        plan_premium_feature4: "Datenbanken Verbinden",
+        plan_premium_feature5: "Datenbanken Erstellen",
+        plan_premium_feature6: "Schemata Laden",
+        price_period: "/Monat",
+        most_popular: "Am Beliebtesten",
+        faq_title: "Häufig Gestellte Fragen",
+        faq_q1: "Welche Datenbanken unterstützt SQL-Krankenschwester?",
+        faq_a1: "SQL-Krankenschwester unterstützt derzeit SQLite, MySQL und PostgreSQL. Wir arbeiten kontinuierlich daran, weitere Datenbanksysteme zu unterstützen.",
+        faq_q2: "Sind meine Daten sicher?",
+        faq_a2: "Ja, Sicherheit hat höchste Priorität. Wir verwenden branchenübliche Verschlüsselung für alle Datenübertragungen und -speicherungen. Ihre Datenbankanmeldedaten werden niemals im Klartext gespeichert.",
+        faq_q3: "Kann ich mein Abonnement jederzeit kündigen?",
+        faq_a3: "Absolut! Sie können Ihr Abonnement jederzeit kündigen. Wenn Sie kündigen, haben Sie bis zum Ende Ihres Abrechnungszeitraums weiterhin Zugriff auf Ihre kostenpflichtigen Funktionen.",
+        faq_q4: "Bieten Sie Teampläne an?",
+        faq_a4: "Derzeit bieten wir nur Einzelpläne an. Wir entwickeln jedoch aktiv Funktionen für die Teamzusammenarbeit und planen, in naher Zukunft Teampläne einzuführen.",
+        faq_q5: "Wie genau ist die Abfragegenerierung in natürlicher Sprache?",
+        faq_a5: "Unser KI-Modell wurde mit Tausenden von Datenbankschemata und Abfragen trainiert und erreicht eine Genauigkeit von über 90 % für gängige Abfragetypen. Für komplexe Abfragen stellen wir den generierten SQL-Code zur Überprüfung und Bearbeitung bereit.",
+        cta_title: "Bereit, Ihren Datenbank-Workflow zu Transformieren?",
+        cta_subtitle: "Schließen Sie sich Tausenden von Nutzern an, die ihr Datenbankmanagement mit SQL-Krankenschwester vereinfacht haben.",
+        footer_brand: "SQL-Krankenschwester",
+        footer_brand_desc: "Ihre komplette Lösung für Datenbankmanagement und Visualisierung.",
+        footer_product: "Produkt",
+        footer_company: "Unternehmen",
+        footer_legal: "Rechtliches",
+        footer_about: "Über Uns",
+        footer_blog: "Blog",
+        footer_contact: "Kontakt",
+        footer_privacy: "Datenschutzrichtlinie",
+        footer_terms: "Nutzungsbedingungen",
+        footer_copyright: "&copy; 2023 SQL-Krankenschwester. Alle Rechte vorbehalten.",
+        auth_title: "Willkommen bei SQL-Krankenschwester",
+        auth_login: "Anmelden",
+        auth_signup: "Registrieren",
+        email_placeholder: "E-Mail",
+        password_placeholder: "Passwort",
+        auth_error: "",
+        login_google: "Mit Google anmelden",
+        login_github: "Mit GitHub anmelden",
+        lang_english: "Englisch",
+        lang_french: "Französisch",
+        lang_german: "Deutsch",
+        lang_portuguese: "Portugiesisch",
+        lang_dutch: "Niederländisch",
+        lang_chinese: "Chinesisch",
+        lang_arabic: "Arabisch",
+        lang_spanish: "Spanisch",
+        lang_italian: "Italienisch"
+    },
+    pt: {
+        title: "Enfermeira SQL - Gerenciamento Profissional de Bancos de Dados",
+        navbar_brand: "Enfermeira SQL",
+        nav_features: "Funcionalidades",
+        nav_how_it_works: "Como Funciona",
+        nav_pricing: "Preços",
+        nav_faq: "FAQ",
+        nav_login: "Login",
+        hero_title: "Revolucione o Gerenciamento do Seu Banco de Dados",
+        hero_subtitle: "Enfermeira SQL é uma plataforma tudo-em-um que simplifica a interação com bancos de dados, geração de consultas, gerenciamento de tabelas e visualização de dados com uma interface intuitiva.",
+        get_started: "Começar",
+        features_title: "Funcionalidades Poderosas",
+        feature_query_title: "Geração de Consultas Inteligente",
+        feature_query_desc: "Faça perguntas em linguagem simples e obtenha consultas SQL precisas geradas automaticamente.",
+        feature_visualization_title: "Visualização de Dados",
+        feature_visualization_desc: "Transforme os resultados das suas consultas em gráficos e tabelas bonitas com um único clique.",
+        feature_multidb_title: "Suporte a Múltiplos Bancos de Dados",
+        feature_multidb_desc: "Conecte-se a SQLite, MySQL, PostgreSQL e mais com integração perfeita.",
+        feature_management_title: "Gerenciamento em Tempo Real",
+        feature_management_desc: "Adicione, edite e delete linhas de tabelas diretamente pela nossa interface intuitiva.",
+        feature_security_title: "Seguro e Privado",
+        feature_security_desc: "Seus dados permanecem seguros com criptografia de nível empresarial e controles de privacidade.",
+        feature_ai_title: "Insights Alimentados por IA",
+        feature_ai_desc: "Obtenha sugestões e insights inteligentes baseados na estrutura do seu banco de dados.",
+        how_it_works_title: "Como Funciona",
+        step_connect_title: "Conecte Seu Banco de Dados",
+        step_connect_desc: "Vincule seu banco de dados existente ou crie um novo do zero.",
+        step_query_title: "Faça Perguntas",
+        step_query_desc: "Use linguagem natural para consultar seus dados sem escrever SQL.",
+        step_results_title: "Obtenha Resultados e Visualize",
+        step_results_desc: "Visualize os resultados das consultas e transforme-os em visualizações perspicazes.",
+        step_manage_title: "Gerencie e Otimize",
+        step_manage_desc: "Gerencie suas tabelas facilmente e otimize a estrutura do seu banco de dados.",
+        pricing_title: "Preços Simples e Transparentes",
+        plan_free_title: "Gratuito",
+        plan_free_feature1: "Conectar Bancos de Dados",
+        plan_free_feature2: "Criar Bancos de Dados",
+        plan_free_feature3: "Carregar Esquemas",
+        plan_standard_title: "Padrão",
+        plan_standard_feature1: "Carregar Bancos de Dados",
+        plan_standard_feature2: "Geração de Consultas Avançada",
+        plan_standard_feature3: "Conectar Bancos de Dados",
+        plan_standard_feature4: "Criar Bancos de Dados",
+        plan_standard_feature5: "Carregar Esquemas",
+        plan_premium_title: "Premium",
+        plan_premium_feature1: "Visualizações Avançadas",
+        plan_premium_feature2: "Carregar Bancos de Dados",
+        plan_premium_feature3: "Geração de Consultas Avançada",
+        plan_premium_feature4: "Conectar Bancos de Dados",
+        plan_premium_feature5: "Criar Bancos de Dados",
+        plan_premium_feature6: "Carregar Esquemas",
+        price_period: "/mês",
+        most_popular: "Mais Popular",
+        faq_title: "Perguntas Frequentes",
+        faq_q1: "Quais bancos de dados a Enfermeira SQL suporta?",
+        faq_a1: "A Enfermeira SQL suporta atualmente SQLite, MySQL e PostgreSQL. Estamos trabalhando continuamente para adicionar suporte a mais sistemas de bancos de dados.",
+        faq_q2: "Meus dados estão seguros?",
+        faq_a2: "Sim, a segurança é nossa principal prioridade. Usamos criptografia padrão da indústria para todas as transferências e armazenamento de dados. Suas credenciais de banco de dados nunca são armazenadas em texto simples.",
+        faq_q3: "Posso cancelar minha assinatura a qualquer momento?",
+        faq_a3: "Absolutamente! Você pode cancelar sua assinatura a qualquer momento. Se cancelar, você continuará tendo acesso às funcionalidades pagas até o final do seu período de faturamento.",
+        faq_q4: "Vocês oferecem planos para equipes?",
+        faq_a4: "Atualmente, oferecemos apenas planos individuais. No entanto, estamos desenvolvendo ativamente recursos de colaboração em equipe e esperamos lançar planos para equipes em um futuro próximo.",
+        faq_q5: "Quão precisa é a geração de consultas em linguagem natural?",
+        faq_a5: "Nosso modelo de IA foi treinado em milhares de esquemas e consultas de bancos de dados, alcançando mais de 90% de precisão para tipos de consultas comuns. Para consultas complexas, fornecemos o SQL gerado para revisão e edição, se necessário.",
+        cta_title: "Pronto para Transformar Seu Fluxo de Trabalho de Banco de Dados?",
+        cta_subtitle: "Junte-se a milhares de usuários que simplificaram o gerenciamento de bancos de dados com a Enfermeira SQL.",
+        footer_brand: "Enfermeira SQL",
+        footer_brand_desc: "Sua solução completa para gerenciamento e visualização de bancos de dados.",
+        footer_product: "Produto",
+        footer_company: "Empresa",
+        footer_legal: "Jurídico",
+        footer_about: "Sobre Nós",
+        footer_blog: "Blog",
+        footer_contact: "Contato",
+        footer_privacy: "Política de Privacidade",
+        footer_terms: "Termos de Serviço",
+        footer_copyright: "&copy; 2023 Enfermeira SQL. Todos os direitos reservados.",
+        auth_title: "Bem-vindo à Enfermeira SQL",
+        auth_login: "Login",
+        auth_signup: "Inscrever-se",
+        email_placeholder: "E-mail",
+        password_placeholder: "Senha",
+        auth_error: "",
+        login_google: "Login com Google",
+        login_github: "Login com GitHub",
+        lang_english: "Inglês",
+        lang_french: "Francês",
+        lang_german: "Alemão",
+        lang_portuguese: "Português",
+        lang_dutch: "Holandês",
+        lang_chinese: "Chinês",
+        lang_arabic: "Árabe",
+        lang_spanish: "Espanhol",
+        lang_italian: "Italiano"
+    },
+    nl: {
+        title: "SQL Verpleegster - Professioneel Databasebeheer",
+        navbar_brand: "SQL Verpleegster",
+        nav_features: "Functies",
+        nav_how_it_works: "Hoe Het Werkt",
+        nav_pricing: "Prijzen",
+        nav_faq: "FAQ",
+        nav_login: "Inloggen",
+        hero_title: "Revolutioneer Uw Databasebeheer",
+        hero_subtitle: "SQL Verpleegster is een alles-in-één platform dat database-interactie, querygeneratie, tabelbeheer en datavisualisatie vereenvoudigt met een intuïtieve interface.",
+        get_started: "Beginnen",
+        features_title: "Krachtige Functies",
+        feature_query_title: "Slimme Querygeneratie",
+        feature_query_desc: "Stel vragen in eenvoudig Nederlands en ontvang automatisch gegenereerde, nauwkeurige SQL-queries.",
+        feature_visualization_title: "Datavisualisatie",
+        feature_visualization_desc: "Transformeer uw queryresultaten in mooie grafieken en diagrammen met één klik.",
+        feature_multidb_title: "Ondersteuning voor Meerdere Databases",
+        feature_multidb_desc: "Verbind met SQLite, MySQL, PostgreSQL en meer met naadloze integratie.",
+        feature_management_title: "Realtime Beheer",
+        feature_management_desc: "Voeg, bewerk en verwijder tabelrijen rechtstreeks via onze intuïtieve interface.",
+        feature_security_title: "Veilig & Privé",
+        feature_security_desc: "Uw gegevens blijven veilig met versleuteling op bedrijfsniveau en privacycontroles.",
+        feature_ai_title: "AI-gestuurde Inzichten",
+        feature_ai_desc: "Krijg intelligente suggesties en inzichten gebaseerd op uw databasestructuur.",
+        how_it_works_title: "Hoe Het Werkt",
+        step_connect_title: "Verbind Uw Database",
+        step_connect_desc: "Koppel uw bestaande database of maak een nieuwe vanaf nul.",
+        step_query_title: "Stel Vragen",
+        step_query_desc: "Gebruik natuurlijke taal om uw gegevens te bevragen zonder SQL te schrijven.",
+        step_results_title: "Resultaten Ophalen & Visualiseren",
+        step_results_desc: "Bekijk queryresultaten en transformeer ze in inzichtelijke visualisaties.",
+        step_manage_title: "Beheer & Optimaliseer",
+        step_manage_desc: "Beheer uw tabellen eenvoudig en optimaliseer uw databasestructuur.",
+        pricing_title: "Eenvoudige, Transparante Prijzen",
+        plan_free_title: "Gratis",
+        plan_free_feature1: "Databases Verbinden",
+        plan_free_feature2: "Databases Aanmaken",
+        plan_free_feature3: "Schema's Laden",
+        plan_standard_title: "Standaard",
+        plan_standard_feature1: "Databases Laden",
+        plan_standard_feature2: "Geavanceerde Querygeneratie",
+        plan_standard_feature3: "Databases Verbinden",
+        plan_standard_feature4: "Databases Aanmaken",
+        plan_standard_feature5: "Schema's Laden",
+        plan_premium_title: "Premium",
+        plan_premium_feature1: "Geavanceerde Visualisaties",
+        plan_premium_feature2: "Databases Laden",
+        plan_premium_feature3: "Geavanceerde Querygeneratie",
+        plan_premium_feature4: "Databases Verbinden",
+        plan_premium_feature5: "Databases Aanmaken",
+        plan_premium_feature6: "Schema's Laden",
+        price_period: "/maand",
+        most_popular: "Meest Populaire",
+        faq_title: "Veelgestelde Vragen",
+        faq_q1: "Welke databases ondersteunt SQL Verpleegster?",
+        faq_a1: "SQL Verpleegster ondersteunt momenteel SQLite, MySQL en PostgreSQL. We werken continu aan het toevoegen van ondersteuning voor meer databasesystemen.",
+        faq_q2: "Zijn mijn gegevens veilig?",
+        faq_a2: "Ja, veiligheid heeft de hoogste prioriteit. We gebruiken industriestandaard versleuteling voor alle gegevensoverdrachten en -opslag. Uw database-inloggegevens worden nooit in platte tekst opgeslagen.",
+        faq_q3: "Kan ik mijn abonnement op elk moment opzeggen?",
+        faq_a3: "Absoluut! U kunt uw abonnement op elk moment opzeggen. Als u opzegt, behoudt u toegang tot uw betaalde functies tot het einde van uw factureringsperiode.",
+        faq_q4: "Bieden jullie teamplannen aan?",
+        faq_a4: "Momenteel bieden we alleen individuele plannen aan. We ontwikkelen echter actief functies voor teamsamenwerking en verwachten in de nabije toekomst teamplannen te lanceren.",
+        faq_q5: "Hoe nauwkeurig is de querygeneratie in natuurlijke taal?",
+        faq_a5: "Ons AI-model is getraind op duizenden databaseschema's en queries, met een nauwkeurigheid van meer dan 90% voor gangbare querytypen. Voor complexe queries bieden we de gegenereerde SQL-code aan voor controle en bewerking indien nodig.",
+        cta_title: "Klaar om Uw Databaseworkflow te Transformeren?",
+        cta_subtitle: "Sluit u aan bij duizenden gebruikers die hun databasebeheer hebben vereenvoudigd met SQL Verpleegster.",
+        footer_brand: "SQL Verpleegster",
+        footer_brand_desc: "Uw complete oplossing voor databasebeheer en visualisatie.",
+        footer_product: "Product",
+        footer_company: "Bedrijf",
+        footer_legal: "Juridisch",
+        footer_about: "Over Ons",
+        footer_blog: "Blog",
+        footer_contact: "Contact",
+        footer_privacy: "Privacybeleid",
+        footer_terms: "Gebruiksvoorwaarden",
+        footer_copyright: "&copy; 2023 SQL Verpleegster. Alle rechten voorbehouden.",
+        auth_title: "Welkom bij SQL Verpleegster",
+        auth_login: "Inloggen",
+        auth_signup: "Aanmelden",
+        email_placeholder: "E-mail",
+        password_placeholder: "Wachtwoord",
+        auth_error: "",
+        login_google: "Inloggen met Google",
+        login_github: "Inloggen met GitHub",
+        lang_english: "Engels",
+        lang_french: "Frans",
+        lang_german: "Duits",
+        lang_portuguese: "Portugees",
+        lang_dutch: "Nederlands",
+        lang_chinese: "Chinees",
+        lang_arabic: "Arabisch",
+        lang_spanish: "Spaans",
+        lang_italian: "Italiaans"
+    },
+    zh: {
+        title: "SQL护士 - 专业数据库管理",
+        navbar_brand: "SQL护士",
+        nav_features: "功能",
+        nav_how_it_works: "工作原理",
+        nav_pricing: "定价",
+        nav_faq: "常见问题",
+        nav_login: "登录",
+        hero_title: "革新您的数据库管理",
+        hero_subtitle: "SQL护士是一个一体化平台，通过直观的界面简化数据库交互、查询生成、表格管理和数据可视化。",
+        get_started: "开始使用",
+        features_title: "强大功能",
+        feature_query_title: "智能查询生成",
+        feature_query_desc: "用简单的中文提问，自动生成准确的SQL查询。",
+        feature_visualization_title: "数据可视化",
+        feature_visualization_desc: "一键将查询结果转化为美观的图表和图形。",
+        feature_multidb_title: "多数据库支持",
+        feature_multidb_desc: "无缝连接SQLite、MySQL、PostgreSQL等数据库。",
+        feature_management_title: "实时管理",
+        feature_management_desc: "通过我们直观的界面直接添加、编辑和删除表格行。",
+        feature_security_title: "安全与隐私",
+        feature_security_desc: "您的数据通过企业级加密和隐私控制保持安全。",
+        feature_ai_title: "人工智能驱动的洞察",
+        feature_ai_desc: "根据您的数据库结构获得智能建议和洞察。",
+        how_it_works_title: "工作原理",
+        step_connect_title: "连接您的数据库",
+        step_connect_desc: "链接您现有的数据库或从头创建一个新的。",
+        step_query_title: "提问",
+        step_query_desc: "使用自然语言查询您的数据，无需编写SQL。",
+        step_results_title: "获取结果并可视化",
+        step_results_desc: "查看查询结果并将其转化为有洞察力的可视化内容。",
+        step_manage_title: "管理与优化",
+        step_manage_desc: "轻松管理您的表格并优化数据库结构。",
+        pricing_title: "简单透明的定价",
+        plan_free_title: "免费",
+        plan_free_feature1: "连接数据库",
+        plan_free_feature2: "创建数据库",
+        plan_free_feature3: "加载模式",
+        plan_standard_title: "标准",
+        plan_standard_feature1: "加载数据库",
+        plan_standard_feature2: "高级查询生成",
+        plan_standard_feature3: "连接数据库",
+        plan_standard_feature4: "创建数据库",
+        plan_standard_feature5: "加载模式",
+        plan_premium_title: "高级",
+        plan_premium_feature1: "高级可视化",
+        plan_premium_feature2: "加载数据库",
+        plan_premium_feature3: "高级查询生成",
+        plan_premium_feature4: "连接数据库",
+        plan_premium_feature5: "创建数据库",
+        plan_premium_feature6: "加载模式",
+        price_period: "/月",
+        most_popular: "最受欢迎",
+        faq_title: "常见问题",
+        faq_q1: "SQL护士支持哪些数据库？",
+        faq_a1: "SQL护士目前支持SQLite、MySQL和PostgreSQL。我们正在持续努力以支持更多数据库系统。",
+        faq_q2: "我的数据安全吗？",
+        faq_a2: "是的，安全性是我们的首要任务。我们对所有数据传输和存储使用行业标准加密。您的数据库凭据永远不会以明文存储。",
+        faq_q3: "我可以随时取消订阅吗？",
+        faq_a3: "当然可以！您可以随时取消订阅。如果您取消，您将持续拥有付费功能直到计费周期结束。",
+        faq_q4: "你们提供团队计划吗？",
+        faq_a4: "目前我们仅提供个人计划。然而，我们正在积极开发团队协作功能，并预计在不久的将来推出团队计划。",
+        faq_q5: "自然语言查询生成的准确性如何？",
+        faq_a5: "我们的AI模型在数千个数据库模式和查询上进行训练，常见查询类型准确率超过90%。对于复杂查询，我们提供生成的SQL供您审查和编辑。",
+        cta_title: "准备好改变您的数据库工作流程了吗？",
+        cta_subtitle: "加入数千名用户，与SQL护士一起简化数据库管理。",
+        footer_brand: "SQL护士",
+        footer_brand_desc: "您的完整数据库管理和可视化解决方案。",
+        footer_product: "产品",
+        footer_company: "公司",
+        footer_legal: "法律",
+        footer_about: "关于我们",
+        footer_blog: "博客",
+        footer_contact: "联系方式",
+        footer_privacy: "隐私政策",
+        footer_terms: "服务条款",
+        footer_copyright: "&copy; 2023 SQL护士。保留所有权利。",
+        auth_title: "欢迎使用SQL护士",
+        auth_login: "登录",
+        auth_signup: "注册",
+        email_placeholder: "电子邮件",
+        password_placeholder: "密码",
+        auth_error: "",
+        login_google: "使用Google登录",
+        login_github: "使用GitHub登录",
+        lang_english: "英语",
+        lang_french: "法语",
+        lang_german: "德语",
+        lang_portuguese: "葡萄牙语",
+        lang_dutch: "荷兰语",
+        lang_chinese: "中文",
+        lang_arabic: "阿拉伯语",
+        lang_spanish: "西班牙语",
+        lang_italian: "意大利语"
+    },
+
+ar: {
+    title: "ممرضة SQL - إدارة احترافية لقواعد البيانات",
+    navbar_brand: "ممرضة SQL",
+    nav_features: "الميزات",
+    nav_how_it_works: "كيفية العمل",
+    nav_pricing: "التسعير",
+    nav_faq: "الأسئلة الشائعة",
+    nav_login: "تسجيل الدخول",
+    hero_title: "أحدث ثورة في إدارة قواعد البيانات الخاصة بك",
+    hero_subtitle: "ممرضة SQL هي منصة شاملة تبسط التفاعل مع قواعد البيانات، توليد الاستعلامات، إدارة الجداول، وتصور البيانات بواجهة سهلة الاستخدام.",
+    get_started: "ابدأ الآن",
+    features_title: "ميزات قوية",
+    feature_query_title: "توليد استعلامات ذكي",
+    feature_query_desc: "اطرح الأسئلة بلغة عربية بسيطة واحصل على استعلامات SQL دقيقة يتم توليدها تلقائيًا.",
+    feature_visualization_title: "تصور البيانات",
+    feature_visualization_desc: "حول نتائج استعلاماتك إلى مخططات ورسوم بيانية جذابة بنقرة واحدة.",
+    feature_multidb_title: "دعم قواعد بيانات متعددة",
+    feature_multidb_desc: "اتصل بـ SQLite، MySQL، PostgreSQL وغيرها بتكامل سلس.",
+    feature_management_title: "إدارة فورية",
+    feature_management_desc: "أضف، عدل، وحذف صفوف الجداول مباشرة عبر واجهتنا البديهية.",
+    feature_security_title: "آمن وخاص",
+    feature_security_desc: "تبقى بياناتك آمنة مع تشفير على مستوى المؤسسات وضوابط الخصوصية.",
+    feature_ai_title: "رؤى مدعومة بالذكاء الاصطناعي",
+    feature_ai_desc: "احصل على اقتراحات ورؤى ذكية بناءً على هيكل قاعدة بياناتك.",
+    how_it_works_title: "كيفية العمل",
+    step_connect_title: "ربط قاعدة بياناتك",
+    step_connect_desc: "اربط قاعدة البيانات الحالية الخاصة بك أو أنشئ واحدة جديدة من الصفر.",
+    step_query_title: "طرح الأسئلة",
+    step_query_desc: "استخدم اللغة الطبيعية للاستعلام عن بياناتك دون كتابة SQL.",
+    step_results_title: "الحصول على النتائج وتصورها",
+    step_results_desc: "اعرض نتائج الاستعلامات وحولها إلى تصورات بصرية ثاقبة.",
+    step_manage_title: "إدارة وتحسين",
+    step_manage_desc: "إدارة جداولك بسهولة وتحسين هيكل قاعدة بياناتك.",
+    pricing_title: "تسعير بسيط وشفاف",
+    plan_free_title: "مجاني",
+    plan_free_feature1: "ربط قواعد البيانات",
+    plan_free_feature2: "إنشاء قواعد بيانات",
+    plan_free_feature3: "تحميل المخططات",
+    plan_standard_title: "قياسي",
+    plan_standard_feature1: "تحميل قواعد البيانات",
+    plan_standard_feature2: "توليد استعلامات متقدم",
+    plan_standard_feature3: "ربط قواعد البيانات",
+    plan_standard_feature4: "إنشاء قواعد بيانات",
+    plan_standard_feature5: "تحميل المخططات",
+    plan_premium_title: "مميز",
+    plan_premium_feature1: "تصورات متقدمة",
+    plan_premium_feature2: "تحميل قواعد البيانات",
+    plan_premium_feature3: "توليد استعلامات متقدم",
+    plan_premium_feature4: "ربط قواعد البيانات",
+    plan_premium_feature5: "إنشاء قواعد بيانات",
+    plan_premium_feature6: "تحميل المخططات",
+    price_period: "/شهر",
+    most_popular: "الأكثر شعبية",
+    faq_title: "الأسئلة الشائعة",
+    faq_q1: "ما هي قواعد البيانات التي تدعمها ممرضة SQL؟",
+    faq_a1: "تدعم ممرضة SQL حاليًا SQLite وMySQL وPostgreSQL. نحن نعمل باستمرار لإضافة دعم لمزيد من أنظمة قواعد البيانات.",
+    faq_q2: "هل بياناتي آمنة؟",
+    faq_a2: "نعم، الأمان هو أولويتنا القصوى. نستخدم تشفيرًا قياسيًا في الصناعة لجميع عمليات نقل البيانات والتخزين. لا يتم تخزين بيانات اعتماد قاعدة البيانات الخاصة بك في نص عادي.",
+    faq_q3: "هل يمكنني إلغاء اشتراكي في أي وقت؟",
+    faq_a3: "بالتأكيد! يمكنك إلغاء اشتراكك في أي وقت. إذا ألغيت، ستستمر في الوصول إلى الميزات المدفوعة حتى نهاية فترة الفوترة الخاصة بك.",
+    faq_q4: "هل تقدمون خططًا للفرق؟",
+    faq_a4: "حاليًا، نقدم خططًا فردية فقط. ومع ذلك، نحن نعمل بنشاط على تطوير ميزات التعاون الجماعي ونتوقع إطلاق خطط للفرق في المستقبل القريب.",
+    faq_q5: "ما مدى دقة توليد الاستعلامات بلغة طبيعية؟",
+    faq_a5: "تم تدريب نموذج الذكاء الاصطناعي الخاص بنا على آلاف من مخططات قواعد البيانات والاستعلامات، محققًا دقة تزيد عن 90% لأنواع الاستعلامات الشائعة. بالنسبة للاستعلامات المعقدة، نقدم SQL المولد لك لمراجعته وتعديله إذا لزم الأمر.",
+    cta_title: "هل أنت جاهز لتحويل سير عمل قاعدة بياناتك؟",
+    cta_subtitle: "انضم إلى آلاف المستخدمين الذين قاموا بتبسيط إدارة قواعد بياناتهم مع ممرضة SQL.",
+    footer_brand: "ممرضة SQL",
+    footer_brand_desc: "حلك الشامل لإدارة قواعد البيانات وتصورها.",
+    footer_product: "المنتج",
+    footer_company: "الشركة",
+    footer_legal: "قانوني",
+    footer_about: "معلومات عنا",
+    footer_blog: "مدونة",
+    footer_contact: "اتصل بنا",
+    footer_privacy: "سياسة الخصوصية",
+    footer_terms: "شروط الخدمة",
+    footer_copyright: "&copy; 2023 ممرضة SQL. جميع الحقوق محفوظة.",
+    auth_title: "مرحبًا بك في ممرضة SQL",
+    auth_login: "تسجيل الدخول",
+    auth_signup: "التسجيل",
+    email_placeholder: "البريد الإلكتروني",
+    password_placeholder: "كلمة المرور",
+    auth_error: "",
+    auth_error_required: "البريد الإلكتروني وكلمة المرور مطلوبان",
+    auth_error_generic: "حدث خطأ. الرجاء المحاولة مرة أخرى.",
+    signup_success: "تم التسجيل بنجاح!",
+    login_google: "تسجيل الدخول باستخدام Google",
+    login_github: "تسجيل الدخول باستخدام GitHub",
+    lang_english: "الإنجليزية",
+    lang_french: "الفرنسية",
+    lang_german: "الألمانية",
+    lang_portuguese: "البرتغالية",
+    lang_dutch: "الهولندية",
+    lang_chinese: "الصينية",
+    lang_arabic: "العربية",
+    lang_spanish: "الإسبانية",
+    lang_italian: "الإيطالية"
+},
+
+    es: {
+        title: "Enfermera SQL - Gestión Profesional de Bases de Datos",
+        navbar_brand: "Enfermera SQL",
+        nav_features: "Características",
+        nav_how_it_works: "Cómo Funciona",
+        nav_pricing: "Precios",
+        nav_faq: "Preguntas Frecuentes",
+        nav_login: "Iniciar Sesión",
+        hero_title: "Revoluciona la Gestión de Tus Bases de Datos",
+        hero_subtitle: "Enfermera SQL es una plataforma todo en uno que simplifica la interacción con bases de datos, la generación de consultas, la gestión de tablas y la visualización de datos con una interfaz intuitiva.",
+        get_started: "Comenzar",
+        features_title: "Características Potentes",
+        feature_query_title: "Generación de Consultas Inteligente",
+        feature_query_desc: "Haz preguntas en español simple y obtén consultas SQL precisas generadas automáticamente.",
+        feature_visualization_title: "Visualización de Datos",
+        feature_visualization_desc: "Transforma los resultados de tus consultas en gráficos y tablas atractivos con un solo clic.",
+        feature_multidb_title: "Soporte para Múltiples Bases de Datos",
+        feature_multidb_desc: "Conéctate a SQLite, MySQL, PostgreSQL y más con una integración perfecta.",
+        feature_management_title: "Gestión en Tiempo Real",
+        feature_management_desc: "Añade, edita y elimina filas de tablas directamente a través de nuestra interfaz intuitiva.",
+        feature_security_title: "Seguro y Privado",
+        feature_security_desc: "Tus datos permanecen seguros con cifrado de nivel empresarial y controles de privacidad.",
+        feature_ai_title: "Perspectivas Impulsadas por IA",
+        feature_ai_desc: "Obtén sugerencias e ideas inteligentes basadas en la estructura de tu base de datos.",
+        how_it_works_title: "Cómo Funciona",
+        step_connect_title: "Conecta Tu Base de Datos",
+        step_connect_desc: "Vincula tu base de datos existente o crea una nueva desde cero.",
+        step_query_title: "Haz Preguntas",
+        step_query_desc: "Usa lenguaje natural para consultar tus datos sin escribir SQL.",
+        step_results_title: "Obtén Resultados y Visualiza",
+        step_results_desc: "Visualiza los resultados de las consultas y transfórmalos en visualizaciones perspicaces.",
+        step_manage_title: "Gestiona y Optimiza",
+        step_manage_desc: "Gestiona tus tablas fácilmente y optimiza la estructura de tu base de datos.",
+        pricing_title: "Precios Simples y Transparentes",
+        plan_free_title: "Gratis",
+        plan_free_feature1: "Conectar Bases de Datos",
+        plan_free_feature2: "Crear Bases de Datos",
+        plan_free_feature3: "Cargar Esquemas",
+        plan_standard_title: "Estándar",
+        plan_standard_feature1: "Cargar Bases de Datos",
+        plan_standard_feature2: "Generación de Consultas Avanzada",
+        plan_standard_feature3: "Conectar Bases de Datos",
+        plan_standard_feature4: "Crear Bases de Datos",
+        plan_standard_feature5: "Cargar Esquemas",
+        plan_premium_title: "Premium",
+        plan_premium_feature1: "Visualizaciones Avanzadas",
+        plan_premium_feature2: "Cargar Bases de Datos",
+        plan_premium_feature3: "Generación de Consultas Avanzada",
+        plan_premium_feature4: "Conectar Bases de Datos",
+        plan_premium_feature5: "Crear Bases de Datos",
+        plan_premium_feature6: "Cargar Esquemas",
+        price_period: "/mes",
+        most_popular: "Más Popular",
+        faq_title: "Preguntas Frecuentes",
+        faq_q1: "¿Qué bases de datos soporta Enfermera SQL?",
+        faq_a1: "Enfermera SQL soporta actualmente SQLite, MySQL y PostgreSQL. Estamos trabajando continuamente para añadir soporte para más sistemas de bases de datos.",
+        faq_q2: "¿Están seguros mis datos?",
+        faq_a2: "Sí, la seguridad es nuestra máxima prioridad. Usamos cifrado estándar de la industria para todas las transferencias y almacenamiento de datos. Tus credenciales de base de datos nunca se almacenan en texto plano.",
+        faq_q3: "¿Puedo cancelar mi suscripción en cualquier momento?",
+        faq_a3: "¡Absolutamente! Puedes cancelar tu suscripción en cualquier momento. Si cancelas, seguirás teniendo acceso a las funciones pagadas hasta el final de tu período de facturación.",
+        faq_q4: "¿Ofrecen planes para equipos?",
+        faq_a4: "Actualmente, ofrecemos solo planes individuales. Sin embargo, estamos desarrollando activamente funciones de colaboración en equipo y esperamos lanzar planes para equipos en un futuro cercano.",
+        faq_q5: "¿Qué tan precisa es la generación de consultas en lenguaje natural?",
+        faq_a5: "Nuestro modelo de IA ha sido entrenado con miles de esquemas y consultas de bases de datos, logrando una precisión superior al 90% para tipos de consultas comunes. Para consultas complejas, proporcionamos el SQL generado para que lo revises y edites si es necesario.",
+        cta_title: "¿Listo para Transformar Tu Flujo de Trabajo de Bases de Datos?",
+        cta_subtitle: "Únete a miles de usuarios que han simplificado la gestión de sus bases de datos con Enfermera SQL.",
+        footer_brand: "Enfermera SQL",
+        footer_brand_desc: "Tu solución completa para la gestión y visualización de bases de datos.",
+        footer_product: "Producto",
+        footer_company: "Empresa",
+        footer_legal: "Legal",
+        footer_about: "Sobre Nosotros",
+        footer_blog: "Blog",
+        footer_contact: "Contacto",
+        footer_privacy: "Política de Privacidad",
+        footer_terms: "Términos de Servicio",
+        footer_copyright: "&copy; 2023 Enfermera SQL. Todos los derechos reservados.",
+        auth_title: "Bienvenido a Enfermera SQL",
+        auth_login: "Iniciar Sesión",
+        auth_signup: "Registrarse",
+        email_placeholder: "Correo Electrónico",
+        password_placeholder: "Contraseña",
+        auth_error: "",
+        login_google: "Iniciar Sesión con Google",
+        login_github: "Iniciar Sesión con GitHub",
+        lang_english: "Inglés",
+        lang_french: "Francés",
+        lang_german: "Alemán",
+        lang_portuguese: "Portugués",
+        lang_dutch: "Holandés",
+        lang_chinese: "Chino",
+        lang_arabic: "Árabe",
+        lang_spanish: "Español",
+        lang_italian: "Italiano"
+    },
+    it: {
+        title: "Infermiera SQL - Gestione Professionale dei Database",
+        navbar_brand: "Infermiera SQL",
+        nav_features: "Funzionalità",
+        nav_how_it_works: "Come Funziona",
+        nav_pricing: "Prezzi",
+        nav_faq: "FAQ",
+        nav_login: "Accedi",
+        hero_title: "Rivoluziona la Gestione dei Tuoi Database",
+        hero_subtitle: "Infermiera SQL è una piattaforma tutto-in-uno che semplifica l'interazione con i database, la generazione di query, la gestione delle tabelle e la visualizzazione dei dati con un'interfaccia intuitiva.",
+        get_started: "Inizia Ora",
+        features_title: "Funzionalità Potenti",
+        feature_query_title: "Generazione di Query Intelligente",
+        feature_query_desc: "Fai domande in italiano semplice e ottieni query SQL accurate generate automaticamente.",
+        feature_visualization_title: "Visualizzazione dei Dati",
+        feature_visualization_desc: "Trasforma i risultati delle tue query in grafici e tabelle accattivanti con un solo clic.",
+        feature_multidb_title: "Supporto per Database Multipli",
+        feature_multidb_desc: "Connettiti a SQLite, MySQL, PostgreSQL e altro con un'integrazione perfetta.",
+        feature_management_title: "Gestione in Tempo Reale",
+        feature_management_desc: "Aggiungi, modifica ed elimina righe delle tabelle direttamente attraverso la nostra interfaccia intuitiva.",
+        feature_security_title: "Sicuro e Privato",
+        feature_security_desc: "I tuoi dati rimangono sicuri con crittografia di livello aziendale e controlli sulla privacy.",
+        feature_ai_title: "Approfondimenti Alimentati dall'IA",
+        feature_ai_desc: "Ottieni suggerimenti e approfondimenti intelligenti basati sulla struttura del tuo database.",
+        how_it_works_title: "Come Funziona",
+        step_connect_title: "Collega il Tuo Database",
+        step_connect_desc: "Collega il tuo database esistente o creane uno nuovo da zero.",
+        step_query_title: "Fai Domande",
+        step_query_desc: "Usa il linguaggio naturale per interrogare i tuoi dati senza scrivere SQL.",
+        step_results_title: "Ottieni Risultati e Visualizza",
+        step_results_desc: "Visualizza i risultati delle query e trasformali in visualizzazioni approfondite.",
+        step_manage_title: "Gestisci e Ottimizza",
+        step_manage_desc: "Gestisci facilmente le tue tabelle e ottimizza la struttura del tuo database.",
+        pricing_title: "Prezzi Semplici e Trasparenti",
+        plan_free_title: "Gratuito",
+        plan_free_feature1: "Collegare Database",
+        plan_free_feature2: "Creare Database",
+        plan_free_feature3: "Caricare Schemi",
+        plan_standard_title: "Standard",
+        plan_standard_feature1: "Caricare Database",
+        plan_standard_feature2: "Generazione di Query Avanzata",
+        plan_standard_feature3: "Collegare Database",
+        plan_standard_feature4: "Creare Database",
+        plan_standard_feature5: "Caricare Schemi",
+        plan_premium_title: "Premium",
+        plan_premium_feature1: "Visualizzazioni Avanzate",
+        plan_premium_feature2: "Caricare Database",
+        plan_premium_feature3: "Generazione di Query Avanzata",
+        plan_premium_feature4: "Collegare Database",
+        plan_premium_feature5: "Creare Database",
+        plan_premium_feature6: "Caricare Schemi",
+        price_period: "/mese",
+        most_popular: "Più Popolare",
+        faq_title: "Domande Frequenti",
+        faq_q1: "Quali database supporta Infermiera SQL?",
+        faq_a1: "Infermiera SQL supporta attualmente SQLite, MySQL e PostgreSQL. Stiamo lavorando continuamente per aggiungere supporto per altri sistemi di database.",
+        faq_q2: "I miei dati sono sicuri?",
+        faq_a2: "Sì, la sicurezza è la nostra massima priorità. Utilizziamo crittografia standard di settore per tutti i trasferimenti e l'archiviazione dei dati. Le tue credenziali del database non vengono mai memorizzate in testo chiaro.",
+        faq_q3: "Posso cancellare il mio abbonamento in qualsiasi momento?",
+        faq_a3: "Assolutamente! Puoi cancellare il tuo abbonamento in qualsiasi momento. Se cancelli, continuerai ad avere accesso alle funzionalità a pagamento fino alla fine del tuo periodo di fatturazione.",
+        faq_q4: "Offrite piani per team?",
+        faq_a4: "Attualmente, offriamo solo piani individuali. Tuttavia, stiamo sviluppando attivamente funzionalità di collaborazione per team e prevediamo di lanciare piani per team nel prossimo futuro.",
+        faq_q5: "Quanto è accurata la generazione di query in linguaggio naturale?",
+        faq_a5: "Il nostro modello di IA è stato addestrato su migliaia di schemi e query di database, raggiungendo un'accuratezza superiore al 90% per i tipi di query comuni. Per le query complesse, forniamo il SQL generato per la revisione e la modifica, se necessario.",
+        cta_title: "Pronto a Trasformare il Tuo Flusso di Lavoro con i Database?",
+        cta_subtitle: "Unisciti a migliaia di utenti che hanno semplificato la gestione dei loro database con Infermiera SQL.",
+        footer_brand: "Infermiera SQL",
+        footer_brand_desc: "La tua soluzione completa per la gestione e la visualizzazione dei database.",
+        footer_product: "Prodotto",
+        footer_company: "Azienda",
+        footer_legal: "Legale",
+        footer_about: "Chi Siamo",
+        footer_blog: "Blog",
+        footer_contact: "Contatto",
+        footer_privacy: "Politica sulla Privacy",
+        footer_terms: "Termini di Servizio",
+        footer_copyright: "&copy; 2023 Infermiera SQL. Tutti i diritti riservati.",
+        auth_title: "Benvenuto in Infermiera SQL",
+        auth_login: "Accedi",
+        auth_signup: "Registrati",
+        email_placeholder: "Email",
+        password_placeholder: "Password",
+        auth_error: "",
+        login_google: "Accedi con Google",
+        login_github: "Accedi con GitHub",
+        lang_english: "Inglese",
+        lang_french: "Francese",
+        lang_german: "Tedesco",
+        lang_portuguese: "Portoghese",
+        lang_dutch: "Olandese",
+        lang_chinese: "Cinese",
+        lang_arabic: "Arabo",
+        lang_spanish: "Spagnolo",
+        lang_italian: "Italiano"
+    }
+};
+
+// Landing page functionality
+document.addEventListener('DOMContentLoaded', function() {
+ // Navbar scroll effect
+ window.addEventListener('scroll', function() {
+  const navbar = document.querySelector('.navbar');
+  if (window.scrollY > 50) {
+   navbar.classList.add('scrolled');
+  } else {
+   navbar.classList.remove('scrolled');
+  }
+ });
+
+ // FAQ accordion
+ const faqItems = document.querySelectorAll('.faq-item');
+ faqItems.forEach(item => {
+  const question = item.querySelector('.faq-question');
+  question.addEventListener('click', () => {
+   const isActive = item.classList.contains('active');
+   faqItems.forEach(faq => {
+    faq.classList.remove('active');
+   });
+   if (!isActive) {
+    item.classList.add('active');
+   }
+  });
+ });
+
+ // Get Started buttons
+ document.querySelectorAll('.btn[data-i18n="get_started"]').forEach(btn => {
+  btn.addEventListener('click', () => showAuthModal());
+ });
+ document.getElementById('nav-login').addEventListener('click', function(e) {
+  e.preventDefault();
+  showAuthModal('login');
+ });
+
+ // Smooth scrolling for navigation links
+ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+   e.preventDefault();
+   const target = document.querySelector(this.getAttribute('href'));
+   if (target) {
+    window.scrollTo({
+     top: target.offsetTop - 80,
+     behavior: 'smooth'
+    });
+   }
+  });
+ });
+
+ // Initialize language
+ changeLanguage('en');
+});
+// Check login status and update navbar
+async function checkAuthStatus() {
+    try {
+        const response = await fetch('/user_info', { credentials: 'include' });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.email) {
+                // User is logged in
+                document.getElementById('nav-login').style.display = 'none';
+                document.getElementById('nav-signup').style.display = 'none';
+                document.getElementById('nav-logout').style.display = 'inline-block';
+            } else {
+                // User is not logged in
+                document.getElementById('nav-login').style.display = 'inline-block';
+                document.getElementById('nav-signup').style.display = 'inline-block';
+                document.getElementById('nav-logout').style.display = 'none';
+            }
+        } else {
+            // Not logged in
+            document.getElementById('nav-login').style.display = 'inline-block';
+            document.getElementById('nav-signup').style.display = 'inline-block';
+            document.getElementById('nav-logout').style.display = 'none';
+        }
+    } catch (err) {
+        // Not logged in
+        document.getElementById('nav-login').style.display = 'inline-block';
+        document.getElementById('nav-signup').style.display = 'inline-block';
+        document.getElementById('nav-logout').style.display = 'none';
+    }
+}
+
+// Logout handler with popup
+async function handleLogout() {
+    try {
+        const response = await fetch('/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        // Show success popup
+        alert('You are successfully logged out');
+        
+        // Update navbar
+        checkAuthStatus();
+        
+        // Redirect to home if needed
+        if (window.location.pathname !== '/') {
+            window.location.href = '/';
+        }
+    } catch (err) {
+        console.error('Logout error:', err);
+        alert('Error logging out. Please try again.');
+    }
+}
+
+// Initialize auth status on page load
+checkAuthStatus();
+
+// Handle Get Started button - check if user is logged in first
+async function handleGetStarted() {
+    try {
+        const response = await fetch('/user_info', { credentials: 'include' });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.email) {
+                // User is logged in, redirect to tool
+                window.location.href = '/tool';
+                return;
+            }
+        }
+        // User is not logged in, redirect to auth
+        window.location.href = '/auth';
+    } catch (err) {
+        // On error, redirect to auth
+        window.location.href = '/auth';
+    }
+}
+
+// Auth modal functionality
+function showAuthModal(defaultTab = 'signup') {
+ document.getElementById('auth-modal').style.display = 'flex';
+ switchAuthTab(defaultTab);
+}
+
+function closeAuthModal() {
+ document.getElementById('auth-modal').style.display = 'none';
+ document.getElementById('login-error').style.display = 'none';
+ document.getElementById('signup-error').style.display = 'none';
+}
+
+function switchAuthTab(tab) {
+ document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+ document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+ document.querySelector(`.auth-tab[onclick="switchAuthTab('${tab}')"]`).classList.add('active');
+ document.getElementById(`${tab}-form`).classList.add('active');
+ document.getElementById('login-error').style.display = 'none';
+ document.getElementById('signup-error').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(e) {
+ if (e.target === document.getElementById('auth-modal')) {
+  closeAuthModal();
+ }
+});
+
+// Authentication functions
+async function login() {
+ const email = document.getElementById('login-email').value;
+ const password = document.getElementById('login-password').value;
+ const error = document.getElementById('login-error');
+ if (!email || !password) {
+  error.textContent = translations[currentLanguage].auth_error_required || 'Email and password are required';
+  error.style.display = 'block';
+  return;
+ }
+ try {
+  const response = await fetch('/login', {
+   method: 'POST',
+   headers: { 'Content-Type': 'application/json' },
+   body: JSON.stringify({ email, password }),
+   credentials: 'include'
+  });
+  const data = await response.json();
+  if (data.error) {
+   error.textContent = data.error;
+   error.style.display = 'block';
+  } else {
+   window.location.href = data.redirect;
+  }
+ } catch (err) {
+  error.textContent = translations[currentLanguage].auth_error_generic || 'An error occurred. Please try again.';
+  error.style.display = 'block';
+ }
+}
+
+async function signup() {
+ const email = document.getElementById('signup-email').value;
+ const password = document.getElementById('signup-password').value;
+ const error = document.getElementById('signup-error');
+ if (!email || !password) {
+  error.textContent = translations[currentLanguage].auth_error_required || 'Email and password are required';
+  error.style.display = 'block';
+  return;
+ }
+ try {
+  const response = await fetch('/signup', {
+   method: 'POST',
+   headers: { 'Content-Type': 'application/json' },
+   body: JSON.stringify({ email, password }),
+   credentials: 'include'
+  });
+  const data = await response.json();
+  if (data.error) {
+   error.textContent = data.error;
+   error.style.display = 'block';
+  } else {
+   error.style.color = '#66ff66';
+   error.textContent = translations[currentLanguage].signup_success || 'Signup successful!';
+   error.style.display = 'block';
+   setTimeout(() => {
+    window.location.href = data.redirect;
+   }, 1500);
+  }
+ } catch (err) {
+  error.textContent = translations[currentLanguage].auth_error_generic || 'An error occurred. Please try again.';
+  error.style.display = 'block';
+ }
+}
+
+// Language switcher functionality
+function toggleLanguageMenu() {
+ const menu = document.getElementById('language-menu');
+ menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+function changeLanguage(lang) {
+ currentLanguage = lang;
+ document.documentElement.lang = lang;
+ document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+ document.querySelectorAll('[data-i18n]').forEach(element => {
+  const key = element.dataset.i18n;
+  if (translations[lang][key]) {
+   element.innerText = translations[lang][key];
+  }
+ });
+ document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+  const key = element.dataset.i18nPlaceholder;
+  if (translations[lang][key]) {
+   element.placeholder = translations[lang][key];
+  }
+ });
+ document.querySelector('title').innerText = translations[lang].title;
+ document.querySelectorAll('.language-option').forEach(btn => {
+  btn.classList.toggle('active', btn.dataset.lang === lang);
+ });
+ updatePricingContent();
+ console.log(`Language changed to: ${lang}`);
+ toggleLanguageMenu();
+}
+
+document.querySelectorAll('.language-option').forEach(button => {
+ button.addEventListener('click', () => changeLanguage(button.dataset.lang));
+});
+
+function updatePricingContent() {
+ const container = document.getElementById('pricing-container');
+ container.innerHTML = `
+  <div class="pricing-card">
+   <h3 data-i18n="plan_free_title">${translations[currentLanguage].plan_free_title}</h3>
+   <div class="price">$0<span class="price-period" data-i18n="price_period">${translations[currentLanguage].price_period}</span></div>
+   <ul class="pricing-features">
+    <li data-i18n="plan_free_feature1">${translations[currentLanguage].plan_free_feature1}</li>
+    <li data-i18n="plan_free_feature2">${translations[currentLanguage].plan_free_feature2}</li>
+    <li data-i18n="plan_free_feature3">${translations[currentLanguage].plan_free_feature3}</li>
+   </ul>
+  </div>
+  <div class="pricing-card featured">
+   <h3 data-i18n="plan_standard_title">${translations[currentLanguage].plan_standard_title}</h3>
+   <div class="price">$15<span class="price-period" data-i18n="price_period">${translations[currentLanguage].price_period}</span></div>
+   <ul class="pricing-features">
+    <li data-i18n="plan_standard_feature1">${translations[currentLanguage].plan_standard_feature1}</li>
+    <li data-i18n="plan_standard_feature2">${translations[currentLanguage].plan_standard_feature2}</li>
+    <li data-i18n="plan_standard_feature3">${translations[currentLanguage].plan_standard_feature3}</li>
+    <li data-i18n="plan_standard_feature4">${translations[currentLanguage].plan_standard_feature4}</li>
+    <li data-i18n="plan_standard_feature5">${translations[currentLanguage].plan_standard_feature5}</li>
+   </ul>
+  </div>
+  <div class="pricing-card">
+   <h3 data-i18n="plan_premium_title">${translations[currentLanguage].plan_premium_title}</h3>
+   <div class="price">$25<span class="price-period" data-i18n="price_period">${translations[currentLanguage].price_period}</span></div>
+   <ul class="pricing-features">
+    <li data-i18n="plan_premium_feature1">${translations[currentLanguage].plan_premium_feature1}</li>
+    <li data-i18n="plan_premium_feature2">${translations[currentLanguage].plan_premium_feature2}</li>
+    <li data-i18n="plan_premium_feature3">${translations[currentLanguage].plan_premium_feature3}</li>
+    <li data-i18n="plan_premium_feature4">${translations[currentLanguage].plan_premium_feature4}</li>
+    <li data-i18n="plan_premium_feature5">${translations[currentLanguage].plan_premium_feature5}</li>
+    <li data-i18n="plan_premium_feature6">${translations[currentLanguage].plan_premium_feature6}</li>
+   </ul>
+  </div>
+ `;
+ document.querySelector('.pricing-card.featured').setAttribute('data-i18n-before', 'most_popular');
+ changeLanguage(currentLanguage); // Re-apply translations for dynamic content
+}
+</script>
+</body>
+</html>
+</xaiArtifact>
