@@ -228,10 +228,9 @@ pre {
 }
 #popup button {
     padding: 10px 20px;
-    margin: 0;
-}
-#popup button:first-of-type {
-    margin-right: 30px;
+    margin: 0 10px;
+    display: inline-block;
+    white-space: nowrap;
 }
 #overlay {
     display: none;
