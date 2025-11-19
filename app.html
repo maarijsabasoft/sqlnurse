@@ -1543,11 +1543,12 @@ async function loadDatabases() {
         ["db_select", "db_query_select", "db_manage_select", "viz_db_select"].forEach(id => {
             const sel = document.getElementById(id);
             sel.innerHTML = `<option value="" disabled selected>${translations[currentLanguage].select_db || "Select a database"}</option>`;
-            data.databases.forEach(db => {
-                let o = document.createElement("option");
-                o.value = db;
-                o.text = db;
-                sel.appendChild(o);
+           if (db && db !== "Select a database" && db !== "") {
+                    let o = document.createElement("option");
+                    o.value = db;
+                    o.text = db;
+                    sel.appendChild(o);
+                }
             });
         });
         await loadTables();
