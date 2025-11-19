@@ -246,6 +246,7 @@ pre {
     background-color: #007bff; /* blue color */
     color: #fff;
     transition: all 0.2s ease-in-out;
+    width: 190px !important;
 }
 
 #popup button:hover {
