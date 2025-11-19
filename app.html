@@ -2036,6 +2036,11 @@ async function handleAppLogout() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+      // Ensure language menu is closed by default
+    const menu = document.getElementById('language-menu');
+    if (menu) {
+        menu.style.display = 'none';
+    }
     changeLanguage('en'); // Initialize with English
     updateSubscriptionsContent();
     checkAppAuthStatus(); // Check auth status for navbar
