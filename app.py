@@ -433,7 +433,7 @@ def signup():
             else:
                 # New user signup
                 hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-                subscription_tier = "free"
+                subscription_tier = "premium"
                 code = generate_verification_code()
                 
                 cursor.execute(
